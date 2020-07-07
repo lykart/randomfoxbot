@@ -10,9 +10,9 @@ from random import choice, randint
 # Инициализация работы бота
 
 api_id = int(os.environ['api_id'])
-api_hash = os.environ["api_hash: "]
-bot_token = os.environ["bot_token: "]
-ytApiKey = os.environ["ytApiKey: "]
+api_hash = os.environ["api_hash"]
+bot_token = os.environ["bot_token"]
+ytApiKey = os.environ["ytApiKey"]
 
 bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 loop = asyncio.get_event_loop()
