@@ -1,3 +1,5 @@
+import os
+
 api_id = int(os.environ['api_id'])
 api_hash = os.environ["api_hash"]
 bot_token = os.environ["bot_token"]
