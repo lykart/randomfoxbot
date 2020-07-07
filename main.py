@@ -126,7 +126,7 @@ async def helpInlineQueryHandler(event):
 async def youtubeInlineQueryHandler(event):
 	builder = event.builder
 
-	randomYoutubeVideo = getRandomYoutubeVideo(ytApiKey)
+	randomYoutubeVideo = await getRandomYoutubeVideo(ytApiKey)
 	print(randomYoutubeVideo)
 	await event.answer([
 		builder.article('Случайное видео с YouTube', text=randomYoutubeVideo, link_preview=True)
