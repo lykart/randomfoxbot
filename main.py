@@ -6,18 +6,18 @@ import asyncio, os
 from telethon import TelegramClient, events
 from random import choice, randint
 
-from flask import Flask
-
-randomFoxBotWeb = Flask(__name__)
-
-
-@randomFoxBotWeb.route('/')
-def hello_world():
-	return 'Hello World!'
-
-
-if __name__ == '__main__':
-    randomFoxBotWeb.run()
+# from flask import Flask
+#
+# randomFoxBotWeb = Flask(__name__)
+#
+#
+# @randomFoxBotWeb.route('/')
+# def hello_world():
+# 	return 'Hello World!'
+#
+#
+# if __name__ == '__main__':
+#     randomFoxBotWeb.run()
 
 
 # Инициализация работы бота
