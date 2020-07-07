@@ -2,15 +2,17 @@ from primaryFunctions import \
 	getRandomWikiArticle, orDecider, toBold, toItalic, toMonospace, yesOrNot, randomRating, randomPopGenerator, \
 	getRandomYoutubeVideo, \
 	wikiArticlesQueue, ytVideosQueue
-import asyncio
+import asyncio, os
 from telethon import TelegramClient, events
 from random import choice, randint
 
+
 # Инициализация работы бота
-api_id = int(input("api_id: "))
-api_hash = input("api_hash: ")
-bot_token = input("bot_token: ")
-ytApiKey = input("ytApiKey: ")
+
+api_id = int(os.environ['api_id'])
+api_hash = os.environ["api_hash: "]
+bot_token = os.environ["bot_token: "]
+ytApiKey = os.environ["ytApiKey: "]
 
 bot = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 loop = asyncio.get_event_loop()
