@@ -18,7 +18,7 @@ async def getRandomYoutubeVideo(ytApiKey):
 	encoding = webURL.info().get_content_charset('utf-8')
 	results = json.loads(data.decode(encoding))
 
-	ytVideosQueue.put(f"https://www.youtube.com/watch?v={[i['id']['videoId'] for i in results['items']][0]}")
+	# ytVideosQueue.put(f"https://www.youtube.com/watch?v={[i['id']['videoId'] for i in results['items']][0]}")
 
 	return f"https://www.youtube.com/watch?v={[i['id']['videoId'] for i in results['items']][0]}"
 
@@ -32,7 +32,8 @@ async def getRandomWikiArticle():
 			print("Wiki request is get")
 			randomWikiArticle_json = await response.json()
 
-			wikiArticlesQueue.put(f"https://ru.wikipedia.org/wiki/?curid={randomWikiArticle_json['query']['random'][0]['id']}")
+			# wikiArticlesQueue.put(f"https://ru.wikipedia.org/wiki/?curid="
+			#                       f"{randomWikiArticle_json['query']['random'][0]['id']}")
 
 			return f"https://ru.wikipedia.org/wiki/?curid={randomWikiArticle_json['query']['random'][0]['id']}"
 
