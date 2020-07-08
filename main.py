@@ -138,10 +138,10 @@ async def youtubeInlineQueryHandler(event):
 async def wikiInlineQueryHandler(event):
 	builder = event.builder
 
-	if wikiArticlesQueue.not_full:
-		await queueGenerator()
+	# if wikiArticlesQueue.not_full:
+	# 	await queueGenerator()
 
-	randomWikiArticle = wikiArticlesQueue.get()
+	randomWikiArticle = getRandomWikiArticle()
 	print("Inline request is processed")
 
 	await event.answer([
@@ -229,18 +229,18 @@ async def questionMessageArrivedHandler(event):
 	await bot.send_message(event.from_id, yesOrNot())
 
 # Обработчик на любое сообщение
-@bot.on(events.NewMessage())
-async def anyMessageArrivedHandler(event):
-	messStr = event.text.lower()
-
-	if messStr[-3:] == ' да' or messStr == 'да':
-		reply = 'ПИЗДА!'
-	elif messStr[-4:] == ' нет' or messStr == 'нет':
-		reply = 'ПИДОРА ОТВЕТ!'
-	else:
-		return
-
-	await bot.send_message(event.from_id, reply)
+# @bot.on(events.NewMessage())
+# async def anyMessageArrivedHandler(event):
+# 	messStr = event.text.lower()
+#
+# 	if messStr[-3:] == ' да' or messStr == 'да':
+# 		reply = 'ПИЗДА!'
+# 	elif messStr[-4:] == ' нет' or messStr == 'нет':
+# 		reply = 'ПИДОРА ОТВЕТ!'
+# 	else:
+# 		return
+#
+# 	await bot.send_message(event.from_id, reply)
 
 
 bot.run_until_disconnected()
