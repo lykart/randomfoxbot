@@ -141,7 +141,7 @@ async def wikiInlineQueryHandler(event):
 	# if wikiArticlesQueue.not_full:
 	# 	await queueGenerator()
 
-	randomWikiArticle = getRandomWikiArticle()
+	randomWikiArticle = await getRandomWikiArticle()
 	print("Inline request is processed")
 
 	await event.answer([
