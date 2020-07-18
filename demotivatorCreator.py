@@ -105,7 +105,7 @@ def txtPicCreator(hTxt, subTxt, txtFieldSize, txtFieldPos, picSize):
 	txtFieldWidth = txtFieldSize[0]
 	txtFieldHeight = txtFieldSize[1]
 
-	pathToFont = 'C:\\Windows\\Fonts\\times.ttf'
+	pathToFont = 'times.ttf'
 
 	txtPic = Image.new('RGBA', picSize, (0, 0, 0, 0))
 	txtDrawer = ImageDraw.Draw(txtPic)
