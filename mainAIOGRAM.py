@@ -145,11 +145,11 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 async def randNumInlineQueryHandler(inline_query: InlineQuery):
 	num = [int(i) for i in inline_query.query.replace("num", "").split()]
 
-	messToUser = markdown.bold(f'{randint(num[0], num[1])}')
+	messToUser = markdown.italic(f"Случайное число от {num[0]} до {num[1]}:") + '\n' + markdown.bold(f'{randint(num[0], num[1])}')
 	items = [
 		InlineQueryResultArticle(
 			id=str(time()),
-			title='Ророчка',
+			title=f'Случайное число от {num[0]} до {num[1]}',
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
