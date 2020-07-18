@@ -140,6 +140,21 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
+# Обработчик запроса случайной роры Inline Query
+@dp.inline_handler(regexp=r'(?i)num\s+\d+\s+\d+')
+async def randNumInlineQueryHandler(inline_query: InlineQuery):
+	num = [int(i) for i in inline_query.query.replace("num", "").split()]
+
+	messToUser = markdown.bold(f'{randint(num[0], num[1])}')
+	items = [
+		InlineQueryResultArticle(
+			id=str(time()),
+			title='Ророчка',
+			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
+	]
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+
+
 # Обработчик простейших математических выражений Inline Query
 @dp.inline_handler(regexp=r'[\s\d\.\,\/\*\-\+\(\)]+=$')
 async def calculationInlineQueryHandler(inline_query: InlineQuery):
