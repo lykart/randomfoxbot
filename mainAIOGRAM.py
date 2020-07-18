@@ -141,7 +141,7 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 
 
 # Обработчик запроса случайной роры Inline Query
-@dp.inline_handler(regexp=r'(?i)num\s+\d+\s+\d+')
+@dp.inline_handler(regexp=r'(?i)num\s+-*\d+\s+-*\d+')
 async def randNumInlineQueryHandler(inline_query: InlineQuery):
 	num = [int(i) for i in inline_query.query.replace("num", "").split()]
 
