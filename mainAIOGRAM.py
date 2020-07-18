@@ -224,7 +224,7 @@ async def DemotivatorInlineQueryHandler(message: types.Message):
 	markup.add("Отмена")
 
 	await Form.pic.set()
-	await message.reply("Отправь картинку, которую хотел бы видеть в демотиваторе", reply_markup=markup)
+	await message.answer("Отправь картинку, которую хотел бы видеть в демотиваторе", reply_markup=markup)
 
 
 # You can use state '*' if you need to handle all states
@@ -241,7 +241,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 
 	logging.info('Cancelling state %r', current_state)
 	await state.finish()
-	await message.reply('Cancelled.', reply_markup=types.ReplyKeyboardRemove())
+	await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
 
 
 @dp.message_handler(content_types=['photo'], state=Form.pic)
@@ -252,7 +252,7 @@ async def process_name(message: types.Message, state: FSMContext):
 		await message.photo[-1].download(photoName)
 
 	await Form.next()
-	await message.reply("Что будет в заголовке демотиватора?")
+	await message.answer("Что будет в заголовке демотиватора?")
 
 
 @dp.message_handler(state=Form.header)
@@ -267,7 +267,7 @@ async def process_age(message: types.Message, state: FSMContext):
 	await state.update_data(header=message.text)
 
 
-	await message.reply("А в подзаголовке?")
+	await message.answer("А в подзаголовке?")
 
 
 @dp.message_handler(state=Form.subtitle)
