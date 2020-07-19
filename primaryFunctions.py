@@ -121,17 +121,23 @@ def randomRating(item):
 
 
 popList = [
-	" ", "п", "по", "пи", "па", "пь", "по", "пa", "поо", "паа", " ", " ", "a", "и", " ", " "
+	" ", "пе", "по", "пи", " ", "па", "пь ", "по", " ", "пa", "поо", "паа", "пи", " ", "пю",
+	" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "
 ]
 
 
 def randomPopGenerator(n):
+	if n == 0:
+		n = 1
+	elif n > 100:
+		n = 100
+
 	_str = ''
 
 	for i in range(n):
 		_str += choice(popList)
 
 	_str = _str.strip()
-	re.sub(r'\s{2,}', ' ', _str)
+	_str = re.sub(r'\s{2,}', ' ', _str)
 
 	return _str
