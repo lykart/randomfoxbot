@@ -140,4 +140,7 @@ def randomPopGenerator(n):
 	_str = _str.strip()
 	_str = re.sub(r'\s{2,}', ' ', _str)
 
+	if _str == "" or _str == " ":
+		_str = "попа"
+
 	return _str
