@@ -1,7 +1,15 @@
 import aiohttp, re, json, string, queue
 import urllib.request
-from random import choice, random
 import pymorphy2
+import qrcode
+from aiogram.types.input_file import InputFile
+
+from demotivatorCreator import intBox
+
+from PIL import Image
+
+from time import time
+from random import choice, random
 
 
 morph = pymorphy2.MorphAnalyzer()
@@ -144,3 +152,53 @@ def randomPopGenerator(n):
 		_str = "попа"
 
 	return _str
+
+
+def createQR(txt):
+
+	qr = qrcode.QRCode(
+	    version=None,
+	    error_correction=qrcode.constants.ERROR_CORRECT_M,
+	    box_size=10,
+	    border=4,
+	)
+
+	qr.add_data(txt)
+	qr.make(fit=True)
+
+	img = qr.make_image(fill_color="#f27122", back_color="#141414")
+	img = img.convert('RGBA')
+
+	foxLogo = Image.open("foxLogo.png")
+
+	imWidth = img.width
+
+	logoScale = 1/5.5 # от QR-кода
+	foxLogo = foxLogo.resize(intBox(imWidth*logoScale, imWidth*logoScale))
+
+	img.alpha_composite(foxLogo, dest=intBox(imWidth/2 - foxLogo.width/2, imWidth/2 - foxLogo.width/2))
+
+	img = img.convert('RGB')
+	photoPath = str(time()) + ".jpg"
+	img.save(photoPath)
+
+	img.close()
+	foxLogo.close()
+
+	return photoPath
+
+
+async def uploadInputFileToTelegram(imgPath, botToken, bot):
+
+	chatID = '151605823'
+	img = InputFile(imgPath, filename='qr' + str(time()))
+
+	imgMessage = await bot.send_photo(
+						photo=img,
+						chat_id=chatID,
+						disable_notification=True,
+	)
+
+	print(imgMessage.photo[-1].file_id)
+
+	return imgMessage.photo[-1].file_id

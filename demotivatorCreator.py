@@ -101,6 +101,7 @@ def textExeption(txtDrawer, txt, txtFieldBox, pathToFont, fontSize, canFontChang
 
 	return (txt, fontSize)
 
+
 def txtPicCreator(hTxt, subTxt, txtFieldSize, txtFieldPos, picSize):
 	txtFieldWidth = txtFieldSize[0]
 	txtFieldHeight = txtFieldSize[1]
@@ -129,7 +130,7 @@ def txtPicCreator(hTxt, subTxt, txtFieldSize, txtFieldPos, picSize):
 	txtDrawer.multiline_text(headerBox, hTxt, font=headerFont, fill=textColor, align='center')
 
 	# int(min(txtFieldWidth / 3.5, txtFieldHeight) / 3.9)
-	fontSize = int(fontSize * 0.65)
+	fontSize = int(fontSize * 0.6)
 	temp = textExeption(txtDrawer, subTxt, txtFieldSize, pathToFont, fontSize,
 	    canFontChange=True, howMuchCanFontChange=16, canLiningChange=True)
 
@@ -201,5 +202,3 @@ def demotivatorCreator(picPath, headerTxt, subtitleTxt):
 	photoPath = str(time()) + ".png"
 	demotivatorPic.save(photoPath)
 	return photoPath
-
-

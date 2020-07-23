@@ -1,21 +1,24 @@
 from primaryFunctions import getRandomWikiArticle, orDecider, \
-	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo
-
+	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
+	createQR, uploadInputFileToTelegram
 from demotivatorCreator import demotivatorCreator
+
 from random import choice, randint
 
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import markdown
-from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle
+from aiogram.types.input_media import InputMediaPhoto
+from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, inline_keyboard
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.utils import executor
+from aiogram.utils import executor, markdown
 
 from time import time
+
 import os
 import logging
+import re
 
 
 # Инициализация работы бота
@@ -27,6 +30,7 @@ logging.basicConfig(level=logging.DEBUG)
 bot = Bot(token=bot_token)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
+
 
 helpList = [
 	[
@@ -75,6 +79,69 @@ async def helpInlineHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=300)
 
 
+qrQueue = []
+
+
+@dp.inline_handler(regexp=r'(?i)^qr\b.+$')
+async def qrInlineHandler(inline_query: InlineQuery):
+	txt = re.search(r"(?i)qr\b\s+(.+)", inline_query.query).group(1)
+
+	awaitingButton = inline_keyboard.InlineKeyboardButton(
+		'Ожидайте...',
+		callback_data='awaiting'
+	)
+
+	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).\
+									   insert(awaitingButton)
+
+	items = [
+		InlineQueryResultPhoto(
+			id=str(time()+1),
+			photo_url="https://i.ibb.co/n16zcs0/rnfoxbot-QR.jpg",
+			thumb_url='https://i.ibb.co/KsbFqjG/rnfoxbot-QR.jpg',
+			photo_width=200,
+			photo_height=200,
+			caption=
+				markdown.italic("QR code с текстом") + '\n' +
+			    markdown.bold  (f"\"{txt}\"") + '\n'
+			,
+			reply_markup=awaitingKeyboard,
+			parse_mode='MarkdownV2'
+		)
+	]
+
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=500)
+
+	if inline_query.from_user.id not in qrQueue:
+		qrQueue.append(inline_query.from_user.id)
+		print(qrQueue)
+
+
+@dp.chosen_inline_handler(lambda chosen_inline_query: chosen_inline_query.from_user.id in qrQueue)
+async def some_chosen_inline_handler(chosen_inline_query: types.ChosenInlineResult):
+	queryTxt = chosen_inline_query.query
+	txt = re.search(r"(?i)qr\b\s+(.+)", queryTxt).group(1)
+
+	voidInlineKeyboard = inline_keyboard.InlineKeyboardMarkup()
+
+	qrCodePath = createQR(txt)
+	imgID = await uploadInputFileToTelegram(qrCodePath, botToken=bot_token, bot=bot)
+
+
+	await bot.edit_message_reply_markup(
+		reply_markup=voidInlineKeyboard,
+		inline_message_id=chosen_inline_query.inline_message_id
+	)
+
+	await bot.edit_message_media(
+		media=InputMediaPhoto(media=imgID),
+		inline_message_id=chosen_inline_query.inline_message_id
+	)
+
+	qrQueue.remove(chosen_inline_query.from_user.id)
+	os.remove(qrCodePath)
+
+
 # Обработчик запроса "Who am I?" Inline Query
 @dp.inline_handler(regexp=r'(?i)who\s*am\s*i')
 async def whoIAmInlineHandler(inline_query: InlineQuery):
@@ -98,7 +165,7 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 
 
 # Обработчик ответа Да\Нет на вопрос Inline Query
-@dp.inline_handler(regexp=r'(?i)^(?=.*?\?)((?!или).)*$')
+@dp.inline_handler(regexp=r'(?i)^(?=.*?\?)((?!или|or).)*$')
 async def questionInlineQueryHandler(inline_query: InlineQuery):
 	messToUser = markdown.bold(inline_query.query) + '\n' + markdown.italic(yesOrNot())
 	print(messToUser)
@@ -111,7 +178,7 @@ async def questionInlineQueryHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
-@dp.inline_handler(regexp=r'(?i)(.+\bили\b.+)+')
+@dp.inline_handler(regexp=r'(?i)(.+\bили|or\b.+)+')
 async def OrInlineQueryHandler(inline_query: InlineQuery):
 	messToUser = markdown.bold(inline_query.query) + \
 	             '\n' + markdown.italic(orDecider(inline_query.query).capitalize())
@@ -126,9 +193,9 @@ async def OrInlineQueryHandler(inline_query: InlineQuery):
 
 
 # Обработчик запроса случайной роры Inline Query
-@dp.inline_handler(regexp=r'(?i)popa\s+\d+')
+@dp.inline_handler(regexp=r'(?i)popa|попа\s+\d+')
 async def popaInlineQueryHandler(inline_query: InlineQuery):
-	num = int(inline_query.query.replace("popa", "").strip())
+	num = int(inline_query.query.lower().replace("popa", "").strip())
 
 	messToUser = markdown.bold(randomPopGenerator(num).strip().capitalize())
 	items = [
@@ -143,7 +210,7 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 # Обработчик запроса случайной роры Inline Query
 @dp.inline_handler(regexp=r'(?i)num\s+-*\d+\s+-*\d+')
 async def randNumInlineQueryHandler(inline_query: InlineQuery):
-	num = [int(i) for i in inline_query.query.replace("num", "").split()]
+	num = [int(i) for i in inline_query.query.lower().replace("num", "").split()]
 
 	messToUser = markdown.italic(f"Случайное число от {num[0]} до {num[1]}:") + '\n' + markdown.bold(f'{randint(num[0], num[1])}')
 	items = [
@@ -184,7 +251,7 @@ async def howMuchInlineQueryHandler(inline_query: InlineQuery):
 # Обработчик запроса оценки Inline Query
 @dp.inline_handler(regexp=r'(?i)rate\b\b.*')
 async def RateInlineQueryHandler(inline_query: InlineQuery):
-	item = inline_query.query.replace("rate", '').strip().lower()
+	item = inline_query.query.lower().replace("rate", '').strip()
 	print(item)
 	messToUser = randomRating(item)
 	print(messToUser)
@@ -223,6 +290,11 @@ async def wikiInlineQueryHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
+# @dp.message_handler(regexp='(?i)id')
+# async def idMessageHandler(message: types.Message):
+# 	print(message.chat.id)
+
+
 ############################ FSM для генерации демотиваторов #################################
 
 
@@ -233,7 +305,7 @@ class Form(StatesGroup):
 	subtitle = State()  # Will be represented in storage as 'Form:gender'
 
 
-@dp.message_handler(commands='demotivator')
+@dp.message_handler(commands='demotivator|demo|демо|демотиватор')
 async def DemotivatorInlineQueryHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	markup.add("Отмена")
@@ -243,7 +315,7 @@ async def DemotivatorInlineQueryHandler(message: types.Message):
 
 
 # You can use state '*' if you need to handle all states
-@dp.message_handler(state='*', commands='отмена')
+@dp.message_handler(state='*', commands='отмена|cancel')
 @dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
 async def cancel_handler(message: types.Message, state: FSMContext):
 	current_state = await state.get_state()
