@@ -9,7 +9,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types.input_media import InputMediaPhoto
 from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, inline_keyboard
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import FSMContext, filters
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor, markdown
@@ -305,7 +305,7 @@ class Form(StatesGroup):
 	subtitle = State()  # Will be represented in storage as 'Form:gender'
 
 
-@dp.message_handler(commands='demotivator|demo|демо|демотиватор')
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
 async def DemotivatorInlineQueryHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 	markup.add("Отмена")
@@ -383,9 +383,11 @@ async def process_gender_invalid(message: types.Message, state: FSMContext):
 	await state.finish()
 
 
-###################################################################################
+########################## FSM для генерации демотиваторов #############################
 
 if __name__ == '__main__':
 	executor.start_polling(dp, skip_updates=True)
 
-#############################################################################################
+########################################################################################
+
+# Спасибо Дино :3
