@@ -17,15 +17,12 @@ from aiogram.utils import executor, markdown
 from time import time
 
 import os
-import logging
 import re
 
 
 # Инициализация работы бота
 bot_token = os.environ["bot_token"]
 ytApiKey = os.environ["ytApiKey"]
-
-logging.basicConfig(level=logging.DEBUG)
 
 bot = Bot(token=bot_token)
 storage = MemoryStorage()
@@ -79,9 +76,6 @@ async def helpInlineHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=300)
 
 
-qrQueue = []
-
-
 @dp.inline_handler(regexp=r'(?i)^qr\b.+$')
 async def qrInlineHandler(inline_query: InlineQuery):
 	txt = re.search(r"(?i)qr\b\s+(.+)", inline_query.query).group(1)
@@ -112,12 +106,8 @@ async def qrInlineHandler(inline_query: InlineQuery):
 
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=500)
 
-	if inline_query.from_user.id not in qrQueue:
-		qrQueue.append(inline_query.from_user.id)
-		print(qrQueue)
 
-
-@dp.chosen_inline_handler(lambda chosen_inline_query: chosen_inline_query.from_user.id in qrQueue)
+@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r"(?i)^qr\b.+$", chosen_inline_query.query))
 async def some_chosen_inline_handler(chosen_inline_query: types.ChosenInlineResult):
 	queryTxt = chosen_inline_query.query
 	txt = re.search(r"(?i)qr\b\s+(.+)", queryTxt).group(1)
@@ -138,7 +128,6 @@ async def some_chosen_inline_handler(chosen_inline_query: types.ChosenInlineResu
 		inline_message_id=chosen_inline_query.inline_message_id
 	)
 
-	qrQueue.remove(chosen_inline_query.from_user.id)
 	os.remove(qrCodePath)
 
 
@@ -326,7 +315,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 		if len(data['pic']) > 2:
 			os.remove(data['pic'])
 
-	logging.info('Cancelling state %r', current_state)
 	await state.finish()
 	await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
 
