@@ -161,6 +161,10 @@ def frameCreator(picSize, frameSize):
 	return frame
 
 
+def atLeastOne(x):
+	return x if x > 0 else 1
+
+
 def demotivatorCreator(picPath, headerTxt, subtitleTxt):
 	pic = Image.open(picPath)
 
@@ -180,7 +184,7 @@ def demotivatorCreator(picPath, headerTxt, subtitleTxt):
 	backSize = intBox(picWidth + paddingXPx * 2, picHeight + textFieldHeightPx + paddingYPx)
 	background = Image.new('RGBA', backSize, (0, 0, 0, 255))
 
-	frameSize = int(min(background.width, background.height) / 250)
+	frameSize = atLeastOne(int(min(background.width, background.height) / 250))
 	frame = frameCreator(pic.size, frameSize)
 	frameBox = (paddingXPx - frameSize * 4, paddingYPx - frameSize * 4,
 	            paddingXPx - frameSize * 4 + frame.size[0], paddingYPx - frameSize * 4 + frame.size[1])

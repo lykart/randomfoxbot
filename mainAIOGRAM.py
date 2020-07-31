@@ -433,10 +433,28 @@ class Form(StatesGroup):
 	subtitle = State()
 
 
+# You can use state '*' if you need to handle all states
+@dp.message_handler(state='*', regexp=r'(?i)\\отмена|\\cancel')
+async def cancel_handler(message: types.Message, state: FSMContext):
+	current_state = await state.get_state()
+	if current_state is None:
+		return
+
+	async with state.proxy() as data:
+		try:
+			if len(data['pic']) > 2:
+				os.remove(data['pic'])
+		except:
+			pass
+
+	await state.finish()
+	await message.answer('Отменено.', reply_markup=types.ReplyKeyboardRemove())
+
+
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
 async def DemotivatorInlineQueryHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	markup.add("Отмена")
+	markup.add("\\отмена")
 
 	await Form.pic.set()
 	await message.answer("Отправь картинку, которую хотел бы видеть в демотиваторе", reply_markup=markup)
@@ -492,23 +510,6 @@ async def process_gender_invalid(message: types.Message, state: FSMContext):
 	os.remove(data['pic'])
 
 	await state.finish()
-
-
-# You can use state '*' if you need to handle all states
-@dp.message_handler(state='*', commands='отмена|cancel')
-@dp.message_handler(Text(equals='отмена', ignore_case=True), state='*')
-async def cancel_handler(message: types.Message, state: FSMContext):
-	current_state = await state.get_state()
-	if current_state is None:
-		return
-
-	async with state.proxy() as data:
-		if len(data['pic']) > 2:
-			os.remove(data['pic'])
-
-	logging.info('Cancelling state %r', current_state)
-	await state.finish()
-	await message.reply('Отменено.', reply_markup=types.ReplyKeyboardRemove())
 
 
 ########################## FSM для генерации демотиваторов #############################
