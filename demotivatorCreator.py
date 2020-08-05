@@ -69,19 +69,30 @@ def textExeption(txtDrawer, txt, txtFieldWidth, pathToFont, fontSize, canFontCha
 	_font = ImageFont.truetype(pathToFont, fontSize)
 	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
 
+	changedFontSize = fontSize
+
 	if canFontChange:
 		m = 2
-		while txtWidth > txtFieldWidth and m <= howMuchCanFontChange:
-			fontSize -= 2
-			m += 2
+		while txtWidth > txtFieldWidth:
+			if m <= howMuchCanFontChange:
+				changedFontSize -= 2
+				m += 2
 
-			if fontSize <= 0:
+				if changedFontSize <= 1:
+					break
+
+				_font = ImageFont.truetype(pathToFont, changedFontSize)
+				txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+
+				print(txtWidth, txtFieldWidth, changedFontSize)
+			else:
 				break
-
-			_font = ImageFont.truetype(pathToFont, fontSize)
-			txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+		else:
+			fontSize = changedFontSize
 
 	if txtWidth > txtFieldWidth:
+		_font = ImageFont.truetype(pathToFont, fontSize)
+
 		if canLiningChange:
 			wordsCount = len(textPreparation(txt).split())
 			if wordsCount > 1:
@@ -89,21 +100,44 @@ def textExeption(txtDrawer, txt, txtFieldWidth, pathToFont, fontSize, canFontCha
 				n = int(wordsCount / 2)
 				breakedWords = n
 
-				if n > 4:
-					for i in range(-2, 2):
-						if n + i > wordsCount:
-							break
-						elif not n + i >= 0:
-							continue
 
-						subTxt = textLineBreak(txt, n + i)
-						txtWidth = txtDrawer.multiline_textsize(subTxt, font=_font)[0]
+				for i in range(-2, 2):
+					if n + i > wordsCount:
+						break
+					elif not n + i >= 0:
+						continue
 
-						if txtWidth < minSubTxtWidth:
-							minSubTxtWidth = txtWidth
-							breakedWords = n + i
+					subTxt = textLineBreak(txt, n + i)
+					txtWidth = txtDrawer.multiline_textsize(subTxt, font=_font)[0]
+
+					print("lining", txtWidth, txtFieldWidth)
+
+					if txtWidth < minSubTxtWidth:
+						minSubTxtWidth = txtWidth
+						breakedWords = n + i
 
 				txt = textLineBreak(txt, breakedWords)
+
+	changedFontSize = fontSize
+
+	if canFontChange:
+		m = 2
+		while txtWidth > txtFieldWidth:
+			if m <= howMuchCanFontChange:
+				changedFontSize -= 2
+				m += 2
+
+				if changedFontSize <= 1:
+					break
+
+				_font = ImageFont.truetype(pathToFont, changedFontSize)
+				txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+
+				print(txtWidth, txtFieldWidth, changedFontSize)
+			else:
+				break
+		else:
+			fontSize = changedFontSize
 
 	if txtWidth > txtFieldWidth:
 		return "Error"
@@ -116,7 +150,7 @@ def zeroIfNone(x):
 
 
 def getBackWidthFromPicWidth(picWidth):
-	padding = 1 / 8  # от размера изображения по каждой из сторон
+	padding = 1 / 9  # от размера изображения по каждой из сторон
 	paddingXPx = int(picWidth * padding)
 
 	return picWidth + paddingXPx * 2
@@ -130,10 +164,14 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		backWidth = getBackWidthFromPicWidth(picWidth)
 	elif picPath:
 		pic = Image.open(picPath)
+		pic = picExeption(pic)
+
 		backWidth = getBackWidthFromPicWidth(pic.width)
 		pic.close()
 	else:
 		return "Width missed"
+
+	print(backWidth)
 
 	txtPaddingCoeff = 1 / 18  # от размера самого демотиватора
 	txtPadding = int(backWidth * txtPaddingCoeff)
@@ -148,7 +186,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 
 	headerTargetFontSize = int(txtFieldWidth / 9)
 	temp = textExeption(txtDrawer, hTxt, txtFieldWidth, pathToFont, headerTargetFontSize,
-		canFontChange=True, howMuchCanFontChange=40, canLiningChange=True)
+		canFontChange=True, howMuchCanFontChange=30, canLiningChange=True)
 
 	if temp == "Error":
 		return "Too long header text"
@@ -159,7 +197,8 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 	txtSize = txtDrawer.multiline_textsize(hTxt, font=headerFont)
 	headerWidth, headerHeight = txtSize[0], txtSize[1]
 
-	headerBox = intBox(backWidth / 2 - headerWidth / 2, txtPadding / 3)
+	headerBox = intBox((backWidth / 2) - (headerWidth / 2), txtPadding / 3)
+	print(headerBox)
 
 	if subTxt:
 		subTxtPadding = headerHeight * 0.15
@@ -167,7 +206,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		# int(min(txtFieldWidth / 3.5, txtFieldHeight) / 3.9)
 		subFontSize = int(headerFontSize * 0.6)
 		temp = textExeption(txtDrawer, subTxt, txtFieldWidth, pathToFont, subFontSize,
-		    canFontChange=True, howMuchCanFontChange=25, canLiningChange=True)
+		    canFontChange=True, howMuchCanFontChange=20, canLiningChange=True)
 
 		if temp == "Error":
 			return "Too long subtitle text"
@@ -176,7 +215,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		subFont = ImageFont.truetype(pathToFont, fontSize)
 		subTxtWidth, subTxtHeight = txtDrawer.multiline_textsize(subTxt, font=subFont)
 
-		subtitleBox = intBox(txtPadding + txtFieldWidth / 2 - subTxtWidth / 2, headerBox[1] + headerHeight + subTxtPadding)
+		subtitleBox = intBox(backWidth / 2 - subTxtWidth / 2, headerBox[1] + headerHeight + subTxtPadding)
 
 		textHeight = headerHeight + subTxtHeight + subTxtPadding
 	else:
@@ -189,6 +228,8 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 
 	if subTxt:
 		txtDrawer.multiline_text(subtitleBox, subTxt, font=subFont, fill=textColor, align='center')
+
+	txtPic.show()
 
 	return txtPic
 
@@ -226,8 +267,6 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 	padding = paddingXPx / backWidth
 	paddingYPx = int(picHeight * padding)
 
-	backWidth = int(picWidth + paddingXPx * 2)
-
 	if not txtPic:
 		headerTxt = textPreparation(headerTxt)
 		subtitleTxt = textPreparation(subtitleTxt)
@@ -236,9 +275,13 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 
 		if not isPic(txtPic):
 			return txtPic
+	else:
+		backWidth = txtPic.width
 
 	backSize = intBox(backWidth, picHeight + paddingYPx + txtPic.height)
 	background = Image.new('RGB', backSize, (0, 0, 0))
+
+	print("back", backWidth)
 
 	frameSize = atLeastOne(int(min(background.width, background.height) / 250))
 	frame = frameCreator(pic.size, frameSize)
