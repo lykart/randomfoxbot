@@ -1,22 +1,21 @@
-from primaryFunctions import getRandomWikiArticle, orDecider, \
-	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
-	createQR, uploadInputFileToTelegram
-from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
-
+import os
+import re
 from random import choice, randint
+from time import time
 
 from aiogram import Bot, Dispatcher, types
-from aiogram.types.input_media import InputMediaPhoto
-from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, inline_keyboard
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext, filters
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, \
+	inline_keyboard
+from aiogram.types.input_media import InputMediaPhoto
 from aiogram.utils import executor, markdown
 
-from time import time
-
-import os
-import re
+from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
+from primaryFunctions import getRandomWikiArticle, orDecider, \
+	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
+	createQR, uploadInputFileToTelegram
 
 # https://sarratus.imgbb.com/ <- Картинки хранятся здесь
 
@@ -261,7 +260,6 @@ async def questionInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Ответ:',
-			description=answer,
 			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
@@ -278,7 +276,6 @@ async def OrInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Одно из слов:',
-			description=answer,
 			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]

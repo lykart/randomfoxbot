@@ -1,16 +1,19 @@
-import aiohttp, re, json, string, queue
 import urllib.request
+from random import choice, random
+from time import time
+
+import aiohttp
+import json
 import pymorphy2
 import qrcode
+import qrtools
+import queue
+import re
+import string
+from PIL import Image
 from aiogram.types.input_file import InputFile
 
 from demotivatorCreator import intBox
-
-from PIL import Image
-
-from time import time
-from random import choice, random
-
 
 morph = pymorphy2.MorphAnalyzer()
 
@@ -202,3 +205,13 @@ async def uploadInputFileToTelegram(imgPath, botToken, bot):
 	print(imgMessage.photo[-1].file_id)
 
 	return imgMessage.photo[-1].file_id
+
+
+def decodeQr(picPath):
+	qr = qrtools.QR()
+	qr.decode(picPath)
+
+	# TODO: Реализовать взаимодействие пользователя
+	#   с распознованием qr-кодов через inline, желательно
+
+	return qr.data

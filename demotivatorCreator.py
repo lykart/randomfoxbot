@@ -1,6 +1,7 @@
-from PIL import Image, ImageDraw, ImageFont
 import re
 from time import time
+
+from PIL import Image, ImageDraw, ImageFont
 
 
 def intBox(x, y):
@@ -16,6 +17,9 @@ def cropImage(image, padding):
 def picExeption(pic):
 	height = pic.height
 	width = pic.width
+
+	# TODO: Сделать ограничение по максимальному
+	#  размеру изображения для экономии ресурсов
 
 	minSizeOfSidePix = 300  # Минимальный размер картинки внутри демотиватора в пикселях
 	if height < minSizeOfSidePix and width < minSizeOfSidePix:
@@ -144,7 +148,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 
 	headerTargetFontSize = int(txtFieldWidth / 9)
 	temp = textExeption(txtDrawer, hTxt, txtFieldWidth, pathToFont, headerTargetFontSize,
-		canFontChange=True, howMuchCanFontChange=50, canLiningChange=True)
+		canFontChange=True, howMuchCanFontChange=40, canLiningChange=True)
 
 	if temp == "Error":
 		return "Too long header text"
@@ -163,7 +167,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		# int(min(txtFieldWidth / 3.5, txtFieldHeight) / 3.9)
 		subFontSize = int(headerFontSize * 0.6)
 		temp = textExeption(txtDrawer, subTxt, txtFieldWidth, pathToFont, subFontSize,
-		    canFontChange=True, howMuchCanFontChange=30, canLiningChange=True)
+		    canFontChange=True, howMuchCanFontChange=25, canLiningChange=True)
 
 		if temp == "Error":
 			return "Too long subtitle text"
@@ -216,8 +220,10 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 	pic = picExeption(pic)
 	picWidth, picHeight = pic.size
 
-	padding = 1/8  # от размера изображения по каждой из сторон
-	paddingXPx = int(picWidth * padding)
+	backWidth = getBackWidthFromPicWidth(picWidth)
+	paddingXPx = int((backWidth - picWidth) / 2)
+
+	padding = paddingXPx / backWidth
 	paddingYPx = int(picHeight * padding)
 
 	backWidth = int(picWidth + paddingXPx * 2)
