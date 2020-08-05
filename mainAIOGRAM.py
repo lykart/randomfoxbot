@@ -1,7 +1,7 @@
 from primaryFunctions import getRandomWikiArticle, orDecider, \
 	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
 	createQR, uploadInputFileToTelegram
-from demotivatorCreator import demotivatorCreator
+from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
 
 from random import choice, randint
 
@@ -10,7 +10,6 @@ from aiogram.types.input_media import InputMediaPhoto
 from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, inline_keyboard
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext, filters
-from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor, markdown
 
@@ -434,7 +433,7 @@ class Form(StatesGroup):
 
 
 # You can use state '*' if you need to handle all states
-@dp.message_handler(state='*', regexp=r'(?i)\\отмена|\\cancel')
+@dp.message_handler(state='*', regexp=r'(?i)/отмена|/cancel|ʘтмена')
 async def cancel_handler(message: types.Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
@@ -448,13 +447,15 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 			pass
 
 	await state.finish()
-	await message.answer('Отменено.', reply_markup=types.ReplyKeyboardRemove())
+	await message.answer('Отменено.')
 
-
+@dp.message_handler(filters.Text(equals="Демотиватор"))
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
 async def DemotivatorInlineQueryHandler(message: types.Message):
-	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-	markup.add("\\отмена")
+	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
+	markup.add("Демотиватор")
+	markup.insert("Пρопустить подзаголовок")
+	markup.add("ʘтмена")
 
 	await Form.pic.set()
 	await message.answer("Отправь картинку, которую хотел бы видеть в демотиваторе", reply_markup=markup)
@@ -473,43 +474,56 @@ async def process_name(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=Form.header)
 async def process_age(message: types.Message, state: FSMContext):
-	while True:
-		if message.text:
-			break
-		else:
-			await message.reply("Не похоже на текст...")
+	if message.text:
+		await Form.next()
+		await state.update_data(header=message.text)
 
-	await Form.next()
-	await state.update_data(header=message.text)
+		await message.answer("А в подзаголовке?")
 
-
-	await message.answer("А в подзаголовке?")
+	else:
+		await message.reply("Не похоже на текст...")
 
 
 @dp.message_handler(state=Form.subtitle)
 async def process_gender_invalid(message: types.Message, state: FSMContext):
-	while True:
-		if message.text:
-			break
+	if message.text:
+		if message.text == "Пρопустить подзаголовок":
+			async with state.proxy() as data:
+				txtPic = txtPicCreator(hTxt=data['header'], picPath=data['pic'])
 		else:
-			await message.reply("Не похоже на текст...")
+			async with state.proxy() as data:
+				data['subtitle'] = message.text
+				txtPic = txtPicCreator(hTxt=data['header'], subTxt=data['subtitle'], picPath=data['pic'])
 
-	async with state.proxy() as data:
-		data['subtitle'] = message.text
+		if not isPic(txtPic):
+			await message.answer(txtPic)
 
-	demPath = demotivatorCreator(data['pic'], data['header'], data['subtitle'])
+			async with state.proxy() as data:
+				try:
+					if len(data['pic']) > 2:
+						os.remove(data['pic'])
+				except:
+					pass
 
-	if '.' not in demPath:
-		await message.answer(demPath)
+			await state.finish()
+			return
+
+		demPath = demotivatorCreator(picPath=data['pic'], txtPic=txtPic)
+
+		if '.' not in demPath:
+			await message.answer(demPath)
+		else:
+			print(demPath)
+			with open(demPath, 'rb') as photo:
+				await bot.send_photo(message.chat.id, photo, caption='Демотиватор готов!')
+			os.remove(demPath)
+
+		os.remove(data['pic'])
+
+		await state.finish()
+
 	else:
-		print(demPath)
-		with open(demPath, 'rb') as photo:
-			await bot.send_photo(message.chat.id, photo, caption='Демотиватор готов!')
-		os.remove(demPath)
-
-	os.remove(data['pic'])
-
-	await state.finish()
+		await message.reply("Не похоже на текст...")
 
 
 ########################## FSM для генерации демотиваторов #############################
