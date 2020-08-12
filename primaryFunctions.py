@@ -1,6 +1,7 @@
 import urllib.request
 from random import choice, random
 from time import time
+from datetime import datetime
 
 import aiohttp
 import json
@@ -215,3 +216,8 @@ def decodeQr(picPath):
 	#   с распознованием qr-кодов через inline, желательно
 
 	return qr.data
+
+
+def getCurrentTime() -> str:
+	currTime = datetime.now().time()
+	return f"{(currTime.hour + 5) % 24}:{str(currTime.minute) if currTime.minute >= 10 else '0' + str(currTime.minute)}"

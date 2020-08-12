@@ -1,6 +1,6 @@
 from primaryFunctions import getRandomWikiArticle, orDecider, \
 	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
-	createQR, uploadInputFileToTelegram, decodeQr
+	createQR, uploadInputFileToTelegram, getCurrentTime
 from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
 
 from random import choice, randint
@@ -16,7 +16,6 @@ from aiogram.utils import executor, markdown
 
 from time import time
 from asyncio import sleep
-from datetime import datetime
 
 import os
 import re
@@ -312,9 +311,9 @@ async def timerChangingHandler(chosen_inline_query: types.ChosenInlineResult):
 	else:
 		doingTimersFrom.remove(userId)
 
-		currTime = datetime.now().time()
+		currTime = getCurrentTime()
 		doneButton = inline_keyboard.InlineKeyboardButton(
-			f'Закончен в {currTime.hour}:{currTime.minute}',
+			'Закончен в ' + currTime,
 			callback_data=f'something'
 		)
 
