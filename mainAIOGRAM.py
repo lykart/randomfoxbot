@@ -1,21 +1,25 @@
-import os
-import re
+from primaryFunctions import getRandomWikiArticle, orDecider, \
+	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
+	createQR, uploadInputFileToTelegram, decodeQr
+from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
+
 from random import choice, randint
-from time import time
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.types.input_media import InputMediaPhoto
+from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, \
+	inline_keyboard
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext, filters
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import InlineQuery, InputTextMessageContent, InlineQueryResultArticle, InlineQueryResultPhoto, \
-	inline_keyboard
-from aiogram.types.input_media import InputMediaPhoto
 from aiogram.utils import executor, markdown
 
-from demotivatorCreator import demotivatorCreator, txtPicCreator, isPic
-from primaryFunctions import getRandomWikiArticle, orDecider, \
-	yesOrNot, randomRating, randomPopGenerator, getRandomYoutubeVideo, \
-	createQR, uploadInputFileToTelegram
+from time import time
+from asyncio import sleep
+from datetime import datetime
+
+import os
+import re
 
 # https://sarratus.imgbb.com/ <- Картинки хранятся здесь
 
@@ -248,6 +252,110 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 			input_message_content=InputTextMessageContent(f"Вы {answer}!"))
 	]
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+
+
+doingTimersFrom = []
+doingTimersFrom.clear()
+@dp.inline_handler(lambda inline_query: re.search(r'(?i)stop\s+timer', inline_query.query))
+async def some_callback_handler(inline_query: InlineQuery):
+	userId = inline_query.from_user.id
+
+	if userId in doingTimersFrom:
+		print(userId, doingTimersFrom)
+		doingTimersFrom.remove(userId)
+
+		items = [
+			InlineQueryResultArticle(
+				id=str(time()),
+				title="Завершаю таймер...",
+				thumb_url=foxLogoPreview,
+				input_message_content=InputTextMessageContent(""))
+		]
+	else:
+		items = [
+			InlineQueryResultArticle(
+				id=str(time()),
+				title="Не могу найти таймер",
+				description="возможно, ни одного не запущено вами",
+				thumb_url=foxLogoPreview,
+				input_message_content=InputTextMessageContent(""))
+		]
+
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+
+
+@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+\d+', chosen_inline_query.query))
+async def timerChangingHandler(chosen_inline_query: types.ChosenInlineResult):
+	secCount = int(chosen_inline_query.query.strip().replace("timer", ""))
+	userId = chosen_inline_query.from_user.id
+	inlineMessageId = chosen_inline_query.inline_message_id
+
+	if userId in doingTimersFrom:
+		await bot.edit_message_text(
+			text=f"Вы же уже запустили таймер?\nПодождите, пока он закончится...",
+			inline_message_id=inlineMessageId
+		)
+		raise BlockingIOError("Таймер уже запущен этим пользователем")
+
+	doingTimersFrom.append(userId)
+
+	while secCount > 0:
+		await bot.edit_message_text(text=f"{secCount}!", inline_message_id=inlineMessageId)
+
+		# TODO: Сделать вычисление по времени, а не по вычитанию числа
+		# TODO: Как-то оптимизировать этот код (хотя бы сократить и сделать более читаемым)
+		secCount -= 1
+		await sleep(1)
+
+		if userId not in doingTimersFrom:
+			break
+	else:
+		doingTimersFrom.remove(userId)
+
+		currTime = datetime.now().time()
+		doneButton = inline_keyboard.InlineKeyboardButton(
+			f'Закончен в {currTime.hour}:{currTime.minute}',
+			callback_data=f'something'
+		)
+
+		inlineKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).insert(doneButton)
+		await bot.edit_message_text(text=f"Время истекло!",	inline_message_id=inlineMessageId)
+		await bot.edit_message_reply_markup(reply_markup=inlineKeyboard,	inline_message_id=inlineMessageId)
+		return
+
+	await bot.edit_message_text(text=f"Таймер завершён досрочно", inline_message_id=inlineMessageId)
+
+
+@dp.inline_handler(regexp=r'(?i)timer\s+\d+')
+async def timerInlineHandler(inline_query: InlineQuery):
+	secCount = int(inline_query.query.strip().replace("timer", ""))
+
+	if secCount > 3600 or secCount < 1:
+		articleTitle = "Таймер не будет запущен"
+		isWrong = True
+	else:
+		articleTitle = 'Запускает таймер'
+		isWrong = False
+
+	awaitingButton = inline_keyboard.InlineKeyboardButton(
+		'Таймер идёт...',
+		callback_data='awaiting'
+	)
+
+	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1). \
+		insert(awaitingButton)
+
+	items = [
+		InlineQueryResultArticle(
+			id=str(time()),
+			title=articleTitle,
+			description=f"на {secCount} секунд",
+			reply_markup=awaitingKeyboard,
+			thumb_url=foxLogoPreview,
+			input_message_content=InputTextMessageContent(f"{secCount}!"))
+	]
+	if not isWrong:
+		await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
 # Обработчик ответа Да\Нет на вопрос Inline Query
