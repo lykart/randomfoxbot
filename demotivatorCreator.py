@@ -88,7 +88,7 @@ def tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCan
 			_font = ImageFont.truetype(pathToFont, fontSize)
 			txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
 
-			print(txtWidth, txtFieldWidth, fontSize)
+			# print(txtWidth, txtFieldWidth, fontSize)
 		else:
 			raise ValueError("Слишком длинный текст: невозможно "
 			                 "вставить в границы демотиватора")
@@ -118,8 +118,6 @@ def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: in
 
 		txt = textLineBreak(txt, n + i)
 		txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-
-		print("lining: ", txtWidth, txtFieldWidth)
 
 		if txtWidth < minSubTxtWidth:
 			minSubTxtWidth = txtWidth
@@ -189,8 +187,6 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 	else:
 		raise ValueError("Данных аргументов недостаточно")
 
-	print(backWidth)
-
 	txtPaddingCoeff = 1 / 18  # от размера самого демотиватора
 	txtPadding = int(backWidth * txtPaddingCoeff)
 
@@ -204,8 +200,8 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 	try:
 		temp = textException(txtDrawer, hTxt, txtFieldWidth, headerTargetFontSize,
 		                     howMuchCanFontChange=30, canLiningChange=True)
-	except ValueError as exc:
-		print(exc, ": Заголовок")
+	except ValueError:
+		# print(exc, ": Заголовок")
 		raise ValueError("Слишком длинный заголовок", "header")
 
 	hTxt, headerFontSize = temp[0], temp[1]
@@ -223,8 +219,8 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		try:
 			temp = textException(txtDrawer, subTxt, txtFieldWidth, subFontSize,
 			                     howMuchCanFontChange=20, canLiningChange=True)
-		except ValueError as exc:
-			print(exc, ": Подзаголовок")
+		except ValueError:
+			# print(exc, ": Подзаголовок")
 			raise ValueError("Слишком длинный подзаголовок", "subtitle")
 
 		subTxt, fontSize = temp[0], temp[1]
@@ -288,7 +284,7 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 		try:
 			txtPic = txtPicCreator(hTxt=headerTxt, subTxt=subtitleTxt, picWidth=backWidth)
 		except ValueError as exceptiopn:
-			print(exceptiopn)
+			# print(exceptiopn)
 			raise exceptiopn
 
 	else:
@@ -296,8 +292,7 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 
 	backSize = intBox(backWidth, picHeight + paddingYPx + txtPic.height)
 	background = Image.new('RGB', backSize, (0, 0, 0))
-
-	print("back", backWidth)
+# print("back", backWidth)
 
 	frameSize = atLeastOne(int(min(background.width, background.height) / 250))
 	frame = frameCreator(pic.size, frameSize)

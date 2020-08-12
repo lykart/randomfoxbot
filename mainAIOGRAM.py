@@ -45,15 +45,15 @@ foxLogoPreview = 'https://i.ibb.co/0tzywHx/Unt22itled-1.png'
 helpList = \
 	[
 		[
-			'Введите один из запросов ниже:',
+		'Введите один из запросов ниже:',
 
-			'',
+		'',
 
-			'',
+		'',
 
-			'Основная функциональность бота заключена в inline-командах. '
-			'Команды можно вводить как строчными, так и заглавными буквами. '
-			'Некоторые из них описаны здесь'
+		'Основная функциональность бота заключена в inline-командах. '
+		'Команды можно вводить как строчными, так и заглавными буквами. '
+		'Некоторые из них описаны здесь'
 		], [
 		'Решение примеров:',
 
@@ -236,7 +236,7 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 	]
 
 	answer = choice(LGBTQKAplus)
-	
+	print(answer)
 
 	items = [
 		InlineQueryResultArticle(
@@ -254,12 +254,12 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 async def questionInlineQueryHandler(inline_query: InlineQuery):
 	answer = yesOrNot()
 	messToUser = markdown.bold(inline_query.query) + '\n' + markdown.italic(answer)
-	
+	print(messToUser)
 
 	items = [
 		InlineQueryResultArticle(
 			id=str(time()),
-			title='Ответ:',
+			title='Ответ',
 			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
@@ -275,7 +275,7 @@ async def OrInlineQueryHandler(inline_query: InlineQuery):
 	items = [
 		InlineQueryResultArticle(
 			id=str(time()),
-			title='Одно из слов:',
+			title='Лис выбрал слово...',
 			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
@@ -297,7 +297,6 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Ророчка:',
-			description=answer,
 			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
@@ -340,7 +339,7 @@ async def calculationInlineQueryHandler(inline_query: InlineQuery):
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
-	await bot.answer_inline_query(inline_query.id, results=items, cache_time=50000)
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=50000000)
 
 
 @dp.inline_handler(regexp=r'(?i)^\s*gay\b.+')
@@ -356,7 +355,7 @@ async def howMuchInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title=f'Насколько {_str} гей?',
-			description="(the pidor)",
+			description="нажми, если любишь маму",
 			thumb_url='https://i.ibb.co/PmrJZxc/1280px-Gay-Pride-Flag-svg.png',
 			input_message_content=InputTextMessageContent(message_text=messToUser, parse_mode='MarkdownV2'))
 	]
@@ -374,7 +373,7 @@ async def RateInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Оценка от Лиса',
-			description='Лисик усердно обнюхал то, что вы принесли ему на оценку, и вынес окончательный вердикт!',
+			description='Лисик вынес окончательный вердикт!',
 			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
@@ -416,7 +415,7 @@ async def wikiInlineQueryHandler(inline_query: InlineQuery):
 
 # @dp.message_handler(regexp='(?i)id')
 # async def idMessageHandler(message: types.Message):
-# 	
+# 	print(message.chat.id)
 
 
 ############################ FSM для генерации демотиваторов #################################
@@ -441,7 +440,7 @@ async def cancelHandler(message: types.Message, state: FSMContext):
 
 	async with state.proxy() as data:
 		try:
-			if len(data['pic']) > 2:
+			if '.' in data['pic']:
 				os.remove(data['pic'])
 		except:
 			pass
@@ -450,8 +449,8 @@ async def cancelHandler(message: types.Message, state: FSMContext):
 	await message.answer('Отменено.')
 
 
-@dp.message_handler(filters.Text(equals="Демотиватор"))
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
+@dp.message_handler(filters.Text(equals="Демотиватор"), state=None)
+# @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
 async def demoCallingHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
 	markup.add("Демотиватор")
@@ -476,7 +475,7 @@ async def picDemoHandler(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Form.header)
 async def headerDemoHandler(message: types.Message, state: FSMContext):
 	if message.text:
-		await state.update_data(header=message.text)
+		await state.update_data(header={"text": message.text, "message": message})
 
 		await Form.subtitle.set()
 		await message.answer("А в подзаголовке?")
@@ -487,7 +486,7 @@ async def headerDemoHandler(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Form.headerChanging)
 async def headerChangingDemoHandler(message: types.Message, state: FSMContext):
 	if message.text:
-		await state.update_data(header=message.text)
+		await state.update_data(header={"text": message.text, "message": message})
 
 		await Form.generationDemo.set()
 		await demoFinisher(message, state)
@@ -503,7 +502,7 @@ async def subtitleDemoHandler(message: types.Message, state: FSMContext):
 				data['subtitle'] = None
 		else:
 			async with state.proxy() as data:
-				data['subtitle'] = message.text
+				data['subtitle'] = {"text": message.text, "message": message}
 
 		await Form.generationDemo.set()
 		await demoFinisher(message, state)
@@ -519,7 +518,7 @@ async def subtitleChangingDemoHandler(message: types.Message, state: FSMContext)
 				data['subtitle'] = None
 		else:
 			async with state.proxy() as data:
-				data['subtitle'] = message.text
+				data['subtitle'] = {"text": message.text, "message": message}
 
 		await Form.generationDemo.set()
 		await demoFinisher(message, state)
@@ -531,17 +530,22 @@ async def subtitleChangingDemoHandler(message: types.Message, state: FSMContext)
 async def demoFinisher(message: types.Message, state: FSMContext):
 	async with state.proxy() as data:
 		try:
-			txtPic = txtPicCreator(hTxt=data['header'], subTxt=data['subtitle'], picPath=data['pic'])
+			subTxt = data['subtitle']['text']
+			hTxt = data['header']['text']
+			txtPic = txtPicCreator(hTxt=hTxt, subTxt=subTxt, picPath=data['pic'])
 		except ValueError as exception:
 			messageToUser = exception.args[0]
 			exceptionIn = exception.args[1]
 
-			await message.answer(messageToUser + ".\n" + "Повторите ввод:")
-
 			if exceptionIn == "subtitle":
+				messageWhichContainsTooLongText = data['subtitle']['message']
 				await Form.subtitleChanging.set()
+
 			elif exceptionIn == "header":
+				messageWhichContainsTooLongText = data['header']['message']
 				await Form.headerChanging.set()
+
+			await messageWhichContainsTooLongText.reply(messageToUser + "\n" + "Повторите ввод:")
 
 			raise
 
