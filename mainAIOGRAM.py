@@ -155,6 +155,7 @@ helpList = \
 		# ]
 	]
 
+# TODO: Сделать информативный и красивый /start
 
 @dp.inline_handler(regexp=r'(?i)^help$|^\s*$')
 async def helpInlineHandler(inline_query: InlineQuery):
@@ -450,7 +451,7 @@ async def cancelHandler(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(filters.Text(equals="Демотиватор"), state=None)
-# @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']), state=None)
 async def demoCallingHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
 	markup.add("Демотиватор")
@@ -531,6 +532,10 @@ async def demoFinisher(message: types.Message, state: FSMContext):
 	async with state.proxy() as data:
 		try:
 			subTxt = data['subtitle']['text']
+		except:
+			subTxt = None
+
+		try:
 			hTxt = data['header']['text']
 			txtPic = txtPicCreator(hTxt=hTxt, subTxt=subTxt, picPath=data['pic'])
 		except ValueError as exception:
