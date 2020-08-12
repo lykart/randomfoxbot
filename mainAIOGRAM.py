@@ -31,29 +31,30 @@ dp = Dispatcher(bot, storage=storage)
 helpImages = [
 	'https://i.ibb.co/0Ydh6nV/qm.png',  # Вопросительный знак
 
-	'https://i.ibb.co/T1Mwz1z/H.png',   # H
+	'https://i.ibb.co/T1Mwz1z/H.png',  # H
 
-	'https://i.ibb.co/hDwK85z/E.png',   # E
+	'https://i.ibb.co/hDwK85z/E.png',  # E
 
-	'https://i.ibb.co/L6nTC1v/L.png',   # L
+	'https://i.ibb.co/L6nTC1v/L.png',  # L
 
-	'https://i.ibb.co/vHzW7Rk/P.png'    # P
+	'https://i.ibb.co/vHzW7Rk/P.png'  # P
 ]
 
+foxLogoPreview = 'https://i.ibb.co/0tzywHx/Unt22itled-1.png'
 
 helpList = \
-[
 	[
-		'Введите один из запросов ниже:',
+		[
+			'Введите один из запросов ниже:',
 
-		'',
+			'',
 
-		'',
+			'',
 
-		'Основная функциональность бота заключена в inline-командах. '
-		'Команды можно вводить как строчными, так и заглавными буквами. '
-		'Некоторые из них описаны здесь'
-	], [
+			'Основная функциональность бота заключена в inline-командах. '
+			'Команды можно вводить как строчными, так и заглавными буквами. '
+			'Некоторые из них описаны здесь'
+		], [
 		'Решение примеров:',
 
 		'Математическое выражение c \"=\" на конце',
@@ -135,24 +136,24 @@ helpList = \
 		'Бот создаст демотиватор из картинки и двух строк текста, которые вы ему отправите. '
 		'Все взаимодействия с ботом сопровождаются подсказками, так, что вы не потеряетесь'
 	],
-	# [
-	# 	'Или в диалоге с ботом:',
-	#
-	# 	'',
-	#
-	# 	'',
-	#
-	# 	''
-	# ], [
-	# 	'Или в диалоге с ботом:',
-	#
-	# 	'',
-	#
-	# 	'',
-	#
-	# 	''
-	# ]
-]
+		# [
+		# 	'Или в диалоге с ботом:',
+		#
+		# 	'',
+		#
+		# 	'',
+		#
+		# 	''
+		# ], [
+		# 	'Или в диалоге с ботом:',
+		#
+		# 	'',
+		#
+		# 	'',
+		#
+		# 	''
+		# ]
+	]
 
 
 @dp.inline_handler(regexp=r'(?i)^help$|^\s*$')
@@ -179,19 +180,19 @@ async def qrInlineHandler(inline_query: InlineQuery):
 		callback_data='awaiting'
 	)
 
-	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).\
-									   insert(awaitingButton)
+	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1). \
+		insert(awaitingButton)
 
 	items = [
 		InlineQueryResultPhoto(
-			id=str(time()+1),
+			id=str(time() + 1),
 			photo_url="https://i.ibb.co/n16zcs0/rnfoxbot-QR.jpg",
 			thumb_url='https://i.ibb.co/KsbFqjG/rnfoxbot-QR.jpg',
 			photo_width=200,
 			photo_height=200,
 			caption=
-				markdown.italic("QR code с текстом") + '\n' +
-			    markdown.bold  (f"\"{txt}\"") + '\n'
+			markdown.italic("QR code с текстом") + '\n' +
+			markdown.bold(f"\"{txt}\"") + '\n'
 			,
 			reply_markup=awaitingKeyboard,
 			parse_mode='MarkdownV2'
@@ -210,7 +211,6 @@ async def some_chosen_inline_handler(chosen_inline_query: types.ChosenInlineResu
 
 	qrCodePath = createQR(txt)
 	imgID = await uploadInputFileToTelegram(qrCodePath, botToken=bot_token, bot=bot)
-
 
 	await bot.edit_message_reply_markup(
 		reply_markup=voidInlineKeyboard,
@@ -236,7 +236,7 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 	]
 
 	answer = choice(LGBTQKAplus)
-	print(answer)
+	
 
 	items = [
 		InlineQueryResultArticle(
@@ -254,13 +254,13 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 async def questionInlineQueryHandler(inline_query: InlineQuery):
 	answer = yesOrNot()
 	messToUser = markdown.bold(inline_query.query) + '\n' + markdown.italic(answer)
-	print(messToUser)
+	
 
 	items = [
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Ответ:',
-			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
+			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
@@ -276,7 +276,7 @@ async def OrInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title='Одно из слов:',
-			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
+			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
@@ -298,7 +298,7 @@ async def popaInlineQueryHandler(inline_query: InlineQuery):
 			id=str(time()),
 			title='Ророчка:',
 			description=answer,
-			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
+			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
@@ -318,7 +318,7 @@ async def randNumInlineQueryHandler(inline_query: InlineQuery):
 			id=str(time()),
 			title=f'Случайное число от {num[0]} до {num[1]}:',
 			description=randomNumber,
-			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
+			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
@@ -358,7 +358,7 @@ async def howMuchInlineQueryHandler(inline_query: InlineQuery):
 			title=f'Насколько {_str} гей?',
 			description="(the pidor)",
 			thumb_url='https://i.ibb.co/PmrJZxc/1280px-Gay-Pride-Flag-svg.png',
-			input_message_content=InputTextMessageContent(message_text=messToUser,	parse_mode='MarkdownV2'))
+			input_message_content=InputTextMessageContent(message_text=messToUser, parse_mode='MarkdownV2'))
 	]
 
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=9999999999)
@@ -375,7 +375,7 @@ async def RateInlineQueryHandler(inline_query: InlineQuery):
 			id=str(time()),
 			title='Оценка от Лиса',
 			description='Лисик усердно обнюхал то, что вы принесли ему на оценку, и вынес окончательный вердикт!',
-			thumb_url='https://i.ibb.co/0tzywHx/Unt22itled-1.png',
+			thumb_url=foxLogoPreview,
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 
@@ -416,7 +416,7 @@ async def wikiInlineQueryHandler(inline_query: InlineQuery):
 
 # @dp.message_handler(regexp='(?i)id')
 # async def idMessageHandler(message: types.Message):
-# 	print(message.chat.id)
+# 	
 
 
 ############################ FSM для генерации демотиваторов #################################
@@ -427,11 +427,14 @@ class Form(StatesGroup):
 	pic = State()
 	header = State()
 	subtitle = State()
+	generationDemo = State()
+	headerChanging = State()
+	subtitleChanging = State()
 
 
 # You can use state '*' if you need to handle all states
 @dp.message_handler(state='*', regexp=r'(?i)/отмена|/cancel|ʘтмена')
-async def cancel_handler(message: types.Message, state: FSMContext):
+async def cancelHandler(message: types.Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
 		return
@@ -446,9 +449,10 @@ async def cancel_handler(message: types.Message, state: FSMContext):
 	await state.finish()
 	await message.answer('Отменено.')
 
+
 @dp.message_handler(filters.Text(equals="Демотиватор"))
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)demotivator|demo|демо|демотиватор$']))
-async def DemotivatorInlineQueryHandler(message: types.Message):
+async def demoCallingHandler(message: types.Message):
 	markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
 	markup.add("Демотиватор")
 	markup.insert("Пρопустить подзаголовок")
@@ -459,68 +463,101 @@ async def DemotivatorInlineQueryHandler(message: types.Message):
 
 
 @dp.message_handler(content_types=['photo'], state=Form.pic)
-async def process_name(message: types.Message, state: FSMContext):
+async def picDemoHandler(message: types.Message, state: FSMContext):
 	async with state.proxy() as data:
 		photoName = str(time()) + ".jpg"
 		data['pic'] = photoName
 		await message.photo[-1].download(photoName)
 
-	await Form.next()
+	await Form.header.set()
 	await message.answer("Что будет в заголовке демотиватора?")
 
 
 @dp.message_handler(state=Form.header)
-async def process_age(message: types.Message, state: FSMContext):
+async def headerDemoHandler(message: types.Message, state: FSMContext):
 	if message.text:
-		await Form.next()
 		await state.update_data(header=message.text)
 
+		await Form.subtitle.set()
 		await message.answer("А в подзаголовке?")
+	else:
+		await message.reply("Не похоже на текст...")
 
+
+@dp.message_handler(state=Form.headerChanging)
+async def headerChangingDemoHandler(message: types.Message, state: FSMContext):
+	if message.text:
+		await state.update_data(header=message.text)
+
+		await Form.generationDemo.set()
+		await demoFinisher(message, state)
 	else:
 		await message.reply("Не похоже на текст...")
 
 
 @dp.message_handler(state=Form.subtitle)
-async def process_gender_invalid(message: types.Message, state: FSMContext):
+async def subtitleDemoHandler(message: types.Message, state: FSMContext):
 	if message.text:
 		if message.text == "Пρопустить подзаголовок":
 			async with state.proxy() as data:
-				txtPic = txtPicCreator(hTxt=data['header'], picPath=data['pic'])
+				data['subtitle'] = None
 		else:
 			async with state.proxy() as data:
 				data['subtitle'] = message.text
-				txtPic = txtPicCreator(hTxt=data['header'], subTxt=data['subtitle'], picPath=data['pic'])
 
-		if not isPic(txtPic):
-			await message.answer(txtPic)
-
-			async with state.proxy() as data:
-				try:
-					if len(data['pic']) > 2:
-						os.remove(data['pic'])
-				except:
-					pass
-
-			await state.finish()
-			return
-
-		demPath = demotivatorCreator(picPath=data['pic'], txtPic=txtPic)
-
-		if '.' not in demPath:
-			await message.answer(demPath)
-		else:
-			print(demPath)
-			with open(demPath, 'rb') as photo:
-				await bot.send_photo(message.chat.id, photo, caption='Демотиватор готов!')
-			os.remove(demPath)
-
-		os.remove(data['pic'])
-
-		await state.finish()
-
+		await Form.generationDemo.set()
+		await demoFinisher(message, state)
 	else:
 		await message.reply("Не похоже на текст...")
+
+
+@dp.message_handler(state=Form.subtitleChanging)
+async def subtitleChangingDemoHandler(message: types.Message, state: FSMContext):
+	if message.text:
+		if message.text == "Пρопустить подзаголовок":
+			async with state.proxy() as data:
+				data['subtitle'] = None
+		else:
+			async with state.proxy() as data:
+				data['subtitle'] = message.text
+
+		await Form.generationDemo.set()
+		await demoFinisher(message, state)
+	else:
+		await message.reply("Не похоже на текст...")
+
+
+@dp.message_handler(state=Form.generationDemo)
+async def demoFinisher(message: types.Message, state: FSMContext):
+	async with state.proxy() as data:
+		try:
+			txtPic = txtPicCreator(hTxt=data['header'], subTxt=data['subtitle'], picPath=data['pic'])
+		except ValueError as exception:
+			messageToUser = exception.args[0]
+			exceptionIn = exception.args[1]
+
+			await message.answer(messageToUser + ".\n" + "Повторите ввод:")
+
+			if exceptionIn == "subtitle":
+				await Form.subtitleChanging.set()
+			elif exceptionIn == "header":
+				await Form.headerChanging.set()
+
+			raise
+
+	demPath = demotivatorCreator(picPath=data['pic'], txtPic=txtPic)
+
+	# Проверка: сгенерировался ли демотиватор
+	if '.' not in demPath:
+		await message.answer(demPath)
+	else:
+		with open(demPath, 'rb') as photo:
+			await bot.send_photo(message.chat.id, photo, caption='Демотиватор готов!')
+		os.remove(demPath)
+
+	os.remove(data['pic'])
+
+	await state.finish()
 
 
 ########################## FSM для генерации демотиваторов #############################

@@ -3,6 +3,8 @@ from time import time
 
 from PIL import Image, ImageDraw, ImageFont
 
+pathToFont = 'times.ttf'
+
 
 def intBox(x, y):
 	return (int(x), int(y))
@@ -29,7 +31,7 @@ def picExeption(pic):
 		height = int(resizeCoeff * height)
 		pic = pic.resize((width, height), resample=Image.BICUBIC)
 
-		# print(pic.size, "minPxCount")
+	# print(pic.size, "minPxCount")
 
 	maxAspectRatio = 4 / 3
 	if width / height > maxAspectRatio or height / width > maxAspectRatio:
@@ -45,7 +47,7 @@ def picExeption(pic):
 
 # Переносит с n-ного слова с конца на новую строку
 def textLineBreak(text, n):
-	temp = text[::-1].replace('\n', ' ').replace(' ', '\n', n).replace('\n', ' ', n-1)
+	temp = text[::-1].replace('\n', ' ').replace(' ', '\n', n).replace('\n', ' ', n - 1)
 	return temp[::-1]
 
 
@@ -64,85 +66,101 @@ def isPic(pic):
 	return True
 
 
+def tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange):
+	_font = ImageFont.truetype(pathToFont, targetFontSize)
+
+	txtDrawer = ImageDraw.Draw(
+		Image.new('RGB', (1, 1), (0, 0, 0))
+	)
+	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+
+	fontSize = targetFontSize
+	n = 2
+	while txtWidth > txtFieldWidth:
+		if n <= howMuchCanFontChange:
+			fontSize -= 2
+			n += 2
+
+			if fontSize <= 5:
+				raise ValueError("Нечитаемый размер шрифта после попытки "
+				                 "вставить в границы демотиватора")
+
+			_font = ImageFont.truetype(pathToFont, fontSize)
+			txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+
+			print(txtWidth, txtFieldWidth, fontSize)
+		else:
+			raise ValueError("Слишком длинный текст: невозможно "
+			                 "вставить в границы демотиватора")
+
+	return fontSize
+
+
+def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: int, wordsCount: int) -> str:
+	_font = ImageFont.truetype(pathToFont, fontSize)
+
+	txtDrawer = ImageDraw.Draw(
+		Image.new('RGB', (1, 1), (0, 0, 0))
+	)
+
+	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+	minSubTxtWidth = txtWidth
+
+	n = int(wordsCount / 2)
+	breakedWords = n
+
+	for i in range(-2, 2):
+
+		if n + i > wordsCount:
+			break
+		elif not n + i >= 0:
+			continue
+
+		txt = textLineBreak(txt, n + i)
+		txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+
+		print("lining: ", txtWidth, txtFieldWidth)
+
+		if txtWidth < minSubTxtWidth:
+			minSubTxtWidth = txtWidth
+			breakedWords = n + i
+
+	txt = textLineBreak(txt, breakedWords)
+
+	return txt
+
+
 # Обрабатывает текст так, чтобы он влез в картинку
-def textExeption(txtDrawer, txt, txtFieldWidth, pathToFont, fontSize, canFontChange, howMuchCanFontChange, canLiningChange):
+def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
+                  canLiningChange: bool, howMuchCanFontChange: int = 0):
+	fontSize = targetFontSize
 	_font = ImageFont.truetype(pathToFont, fontSize)
 	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
 
-	changedFontSize = fontSize
+	if howMuchCanFontChange:
+		try:
+			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange)
+			return txt, fontSize
+		except:
+			pass
 
-	if canFontChange:
-		m = 2
-		while txtWidth > txtFieldWidth:
-			if m <= howMuchCanFontChange:
-				changedFontSize -= 2
-				m += 2
+	wordsCount = len(textPreparation(txt).split())
+	if canLiningChange and wordsCount > 1:
+		txt = minimizingTextWidthByLiningChange(txt, targetFontSize, txtFieldWidth, wordsCount)
 
-				if changedFontSize <= 1:
-					break
+		txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+		if txtWidth < txtFieldWidth:
+			return txt, fontSize
 
-				_font = ImageFont.truetype(pathToFont, changedFontSize)
-				txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-
-				print(txtWidth, txtFieldWidth, changedFontSize)
-			else:
-				break
-		else:
-			fontSize = changedFontSize
-
-	if txtWidth > txtFieldWidth:
-		_font = ImageFont.truetype(pathToFont, fontSize)
-
-		if canLiningChange:
-			wordsCount = len(textPreparation(txt).split())
-			if wordsCount > 1:
-				minSubTxtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-				n = int(wordsCount / 2)
-				breakedWords = n
-
-
-				for i in range(-2, 2):
-					if n + i > wordsCount:
-						break
-					elif not n + i >= 0:
-						continue
-
-					subTxt = textLineBreak(txt, n + i)
-					txtWidth = txtDrawer.multiline_textsize(subTxt, font=_font)[0]
-
-					print("lining", txtWidth, txtFieldWidth)
-
-					if txtWidth < minSubTxtWidth:
-						minSubTxtWidth = txtWidth
-						breakedWords = n + i
-
-				txt = textLineBreak(txt, breakedWords)
-
-	changedFontSize = fontSize
-
-	if canFontChange:
-		m = 2
-		while txtWidth > txtFieldWidth:
-			if m <= howMuchCanFontChange:
-				changedFontSize -= 2
-				m += 2
-
-				if changedFontSize <= 1:
-					break
-
-				_font = ImageFont.truetype(pathToFont, changedFontSize)
-				txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-
-				print(txtWidth, txtFieldWidth, changedFontSize)
-			else:
-				break
-		else:
-			fontSize = changedFontSize
+	if howMuchCanFontChange and canLiningChange:
+		try:
+			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange)
+			return txt, fontSize
+		except:
+			pass
 
 	if txtWidth > txtFieldWidth:
-		return "Error"
-
-	return (txt, fontSize)
+		raise ValueError("Слишком длинный текст")
 
 
 def zeroIfNone(x):
@@ -169,7 +187,7 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 		backWidth = getBackWidthFromPicWidth(pic.width)
 		pic.close()
 	else:
-		return "Width missed"
+		raise ValueError("Данных аргументов недостаточно")
 
 	print(backWidth)
 
@@ -178,18 +196,17 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 
 	txtFieldWidth = backWidth - (txtPadding * 2)
 
-	pathToFont = 'times.ttf'
-
 	txtPic = Image.new('RGB', (10, 10), (0, 0, 0))
 	txtDrawer = ImageDraw.Draw(txtPic)
 	textColor = (255, 255, 255)
 
 	headerTargetFontSize = int(txtFieldWidth / 9)
-	temp = textExeption(txtDrawer, hTxt, txtFieldWidth, pathToFont, headerTargetFontSize,
-		canFontChange=True, howMuchCanFontChange=30, canLiningChange=True)
-
-	if temp == "Error":
-		return "Too long header text"
+	try:
+		temp = textException(txtDrawer, hTxt, txtFieldWidth, headerTargetFontSize,
+		                     howMuchCanFontChange=30, canLiningChange=True)
+	except ValueError as exc:
+		print(exc, ": Заголовок")
+		raise ValueError("Слишком длинный заголовок", "header")
 
 	hTxt, headerFontSize = temp[0], temp[1]
 
@@ -198,18 +215,17 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 	headerWidth, headerHeight = txtSize[0], txtSize[1]
 
 	headerBox = intBox((backWidth / 2) - (headerWidth / 2), txtPadding / 3)
-	print(headerBox)
 
 	if subTxt:
 		subTxtPadding = headerHeight * 0.15
-
-		# int(min(txtFieldWidth / 3.5, txtFieldHeight) / 3.9)
 		subFontSize = int(headerFontSize * 0.6)
-		temp = textExeption(txtDrawer, subTxt, txtFieldWidth, pathToFont, subFontSize,
-		    canFontChange=True, howMuchCanFontChange=20, canLiningChange=True)
 
-		if temp == "Error":
-			return "Too long subtitle text"
+		try:
+			temp = textException(txtDrawer, subTxt, txtFieldWidth, subFontSize,
+			                     howMuchCanFontChange=20, canLiningChange=True)
+		except ValueError as exc:
+			print(exc, ": Подзаголовок")
+			raise ValueError("Слишком длинный подзаголовок", "subtitle")
 
 		subTxt, fontSize = temp[0], temp[1]
 		subFont = ImageFont.truetype(pathToFont, fontSize)
@@ -228,8 +244,6 @@ def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None
 
 	if subTxt:
 		txtDrawer.multiline_text(subtitleBox, subTxt, font=subFont, fill=textColor, align='center')
-
-	txtPic.show()
 
 	return txtPic
 
@@ -271,10 +285,12 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 		headerTxt = textPreparation(headerTxt)
 		subtitleTxt = textPreparation(subtitleTxt)
 
-		txtPic = txtPicCreator(hTxt=headerTxt, subTxt=subtitleTxt, picWidth=backWidth)
+		try:
+			txtPic = txtPicCreator(hTxt=headerTxt, subTxt=subtitleTxt, picWidth=backWidth)
+		except ValueError as exceptiopn:
+			print(exceptiopn)
+			raise exceptiopn
 
-		if not isPic(txtPic):
-			return txtPic
 	else:
 		backWidth = txtPic.width
 
