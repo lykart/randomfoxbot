@@ -1,33 +1,32 @@
 import urllib.request
-from random import choice, random
-from time import time
-from datetime import datetime
-
 import aiohttp
 import json
 import pymorphy2
 import qrcode
 import qrtools
-import queue
 import re
 import string
+
 from PIL import Image
 from aiogram.types.input_file import InputFile
 
-from demotivatorCreator import intBox
+from random import choice, random
+from time import time
+from datetime import datetime
 
-morph = pymorphy2.MorphAnalyzer()
+from Test.Old.demotivatorCreator import intBox
 
-# Очереди рандомного контента (для ускорения работы бота)
-wikiArticlesQueue = queue.Queue(maxsize=30)
-ytVideosQueue = queue.Queue(maxsize=30)
+# TODO: Очереди рандомного контента (для ускорения работы бота)
+# wikiArticlesQueue = queue.Queue(maxsize=30)
+# ytVideosQueue = queue.Queue(maxsize=30)
 
 
 async def getRandomYoutubeVideo(ytApiKey):
 	count = 1
 	_random = ''.join(choice(string.ascii_uppercase + string.digits) for _ in range(3))
 
-	urlData = "https://www.googleapis.com/youtube/v3/search?key={}&maxResults={}&part=snippet&type=video&q={}".format(ytApiKey,count,_random)
+	urlData = "https://www.googleapis.com/youtube/v3/search?key=" \
+	          f"{ytApiKey}&maxResults={count}&part=snippet&type=video&q={_random}"
 	webURL = urllib.request.urlopen(urlData)
 	data = webURL.read()
 	encoding = webURL.info().get_content_charset('utf-8')
@@ -38,7 +37,7 @@ async def getRandomYoutubeVideo(ytApiKey):
 	return f"https://www.youtube.com/watch?v={[i['id']['videoId'] for i in results['items']][0]}"
 
 
-# Возвращает ссылку на случайную статью из русской википедии
+# Возвращает ссылку на случайную статью из русскоязычной википедии
 async def getRandomWikiArticle():
 	wikiUrl = "https://ru.wikipedia.org/w/api.php?action=query&format=json&list=random&rnnamespace=0"
 
@@ -72,19 +71,7 @@ def yesOrNot():
 	return 'Да' if random() <= 0.5 else 'Нет'
 
 
-# Перевод текста в жирный с помощью Markdown
-def toBold(message):
-	return '**' + message + '**'
-
-
-# Перевод текста в курсив с помощью Markdown
-def toItalic(message):
-	return '__' + message + '__'
-
-
-# Перевод текста в моноширинный с помощью Markdown
-def toMonospace(message):
-	return '`' + message + '`'
+morph = pymorphy2.MorphAnalyzer()
 
 
 def randomRating(item):
@@ -146,7 +133,7 @@ def randomPopGenerator(n):
 
 	_str = ''
 
-	for i in range(n):
+	for _ in range(n):
 		_str += choice(popList)
 
 	_str = _str.strip()
@@ -173,11 +160,11 @@ def createQR(txt):
 	img = qr.make_image(fill_color="#f27122", back_color="#141414")
 	img = img.convert('RGBA')
 
-	foxLogo = Image.open("foxLogo.png")
+	foxLogo = Image.open("resources\\foxLogo.png")
 
 	imWidth = img.width
 
-	logoScale = 1/5.5 # от QR-кода
+	logoScale = 1/5.5   # от QR-кода
 	foxLogo = foxLogo.resize(intBox(imWidth*logoScale, imWidth*logoScale))
 
 	img.alpha_composite(foxLogo, dest=intBox(imWidth/2 - foxLogo.width/2, imWidth/2 - foxLogo.width/2))
@@ -192,20 +179,19 @@ def createQR(txt):
 	return photoPath
 
 
-async def uploadInputFileToTelegram(imgPath, botToken, bot):
-
+async def uploadInputFileToTelegram(imgPath, bot):
 	chatID = '151605823'
 	img = InputFile(imgPath, filename='qr' + str(time()))
 
 	imgMessage = await bot.send_photo(
-						photo=img,
-						chat_id=chatID,
-						disable_notification=True,
+		photo=img,
+		chat_id=chatID,
+		disable_notification=True,
 	)
 
-	print(imgMessage.photo[-1].file_id)
+	imgFileId = imgMessage.photo[-1].file_id
 
-	return imgMessage.photo[-1].file_id
+	return imgFileId
 
 
 def decodeQr(picPath):
@@ -220,4 +206,20 @@ def decodeQr(picPath):
 
 def getCurrentTime() -> str:
 	currTime = datetime.now().time()
-	return f"{(currTime.hour + 5) % 24}:{str(currTime.minute) if currTime.minute >= 10 else '0' + str(currTime.minute)}"
+
+	timezoneDifference: int = 5
+	currHour: str = f"{(currTime.hour + timezoneDifference) % 24}"
+
+	currMinute: str
+	if currTime.minute < 10:
+		currMinute = '0' + f'{currTime.minute}'
+	else:
+		currMinute = f'{currTime.minute}'
+
+	currSec: str
+	if currTime.second < 10:
+		currSec = '0' + f'{currTime.second}'
+	else:
+		currSec = f'{currTime.second}'
+
+	return currHour + ":" + currMinute + ":" + currSec

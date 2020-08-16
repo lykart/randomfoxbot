@@ -1,29 +1,34 @@
 import re
+
 from time import time
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
+
 
 pathToFont = 'times.ttf'
 
 
-def intBox(x, y):
-	return (int(x), int(y))
+# Принимает 2 числа, возвращает кортеж из их целых составляющих
+def intBox(*numbers: float) -> Tuple[int]:
+	return tuple(int(num) for num in numbers)
 
 
 # Обрезает с каждой стороны изображения *padding* пикселей
-def cropImage(image, padding):
-	return image.copy().crop((int(padding), int(padding), int(image.width - padding), int(image.height - padding)))
+def cropImage(image: Image, padding: int) -> Image:
+	return image.copy().crop(intBox(padding, padding, image.width - padding, image.height - padding))
 
 
 # Подгоняет отношение сторон и размер изображения под приемлимые значения
-def picExeption(pic):
+def picException(pic: Image) -> Image:
 	height = pic.height
 	width = pic.width
 
 	# TODO: Сделать ограничение по максимальному
 	#  размеру изображения для экономии ресурсов
 
-	minSizeOfSidePix = 300  # Минимальный размер картинки внутри демотиватора в пикселях
+	# Приведение к минимальному допустимому размеру
+	minSizeOfSidePix: int = 300  # Минимальный размер картинки внутри демотиватора в пикселях
 	if height < minSizeOfSidePix and width < minSizeOfSidePix:
 		resizeCoeff = minSizeOfSidePix / min(width, height)
 
@@ -31,9 +36,8 @@ def picExeption(pic):
 		height = int(resizeCoeff * height)
 		pic = pic.resize((width, height), resample=Image.BICUBIC)
 
-	# print(pic.size, "minPxCount")
-
-	maxAspectRatio = 4 / 3
+	# Приведение к допустимому соотношению сторон
+	maxAspectRatio = 4 / 3  # Максимальное соотношение сторон
 	if width / height > maxAspectRatio or height / width > maxAspectRatio:
 		if width == max(width, height):
 			height = int(width / maxAspectRatio)
@@ -46,14 +50,14 @@ def picExeption(pic):
 
 
 # Переносит с n-ного слова с конца на новую строку
-def textLineBreak(text, n):
+def textLineBreak(text: str, n: int) -> str:
 	temp = text[::-1].replace('\n', ' ').replace(' ', '\n', n).replace('\n', ' ', n - 1)
 	return temp[::-1]
 
 
 # Удаление лишних пробелов
 def textPreparation(text):
-	text = re.sub('\s+', ' ', text)
+	text = re.sub(r'\s{2,}', ' ', text)
 	return text.strip()
 
 
@@ -161,10 +165,6 @@ def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
 		raise ValueError("Слишком длинный текст")
 
 
-def zeroIfNone(x):
-	return x if x else 0
-
-
 def getBackWidthFromPicWidth(picWidth):
 	padding = 1 / 9  # от размера изображения по каждой из сторон
 	paddingXPx = int(picWidth * padding)
@@ -173,14 +173,14 @@ def getBackWidthFromPicWidth(picWidth):
 
 
 # Функция создания картинки подписи
-def txtPicCreator(hTxt, picWidth=None, subTxt=None, backWidth=None, picPath=None):
+def txtPicCreator(hTxt, /, picWidth=None, subTxt=None, backWidth=None, picPath=None):
 	if backWidth:
 		pass
 	elif picWidth:
 		backWidth = getBackWidthFromPicWidth(picWidth)
 	elif picPath:
 		pic = Image.open(picPath)
-		pic = picExeption(pic)
+		pic = picException(pic)
 
 		backWidth = getBackWidthFromPicWidth(pic.width)
 		pic.close()
@@ -254,21 +254,21 @@ def frameCreator(picSize, frameSize):
 	blackSizeBox = intBox(picWidth + frameSize * 6, picHeight + frameSize * 6)
 	black = Image.new('RGB', blackSizeBox, (0, 0, 0))
 
-	frame.paste(black, (frameSize, frameSize, frameSize + blackSizeBox[0], frameSize + blackSizeBox[1]))
+	frame.paste(black, intBox(frameSize, frameSize, frameSize + blackSizeBox[0], frameSize + blackSizeBox[1]))
 
 	return frame
 
 
 # Если Х меньше нуля, возвращает 1
-def atLeastOne(x):
-	return x if x > 0 else 1
+def atLeastOne(x: float) -> int:
+	return int(x) if x >= 1 else 1
 
 
 # Основная функция создания демотиватора
 def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 	pic = Image.open(picPath)
 
-	pic = picExeption(pic)
+	pic = picException(pic)
 	picWidth, picHeight = pic.size
 
 	backWidth = getBackWidthFromPicWidth(picWidth)
@@ -294,10 +294,10 @@ def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
 	background = Image.new('RGB', backSize, (0, 0, 0))
 # print("back", backWidth)
 
-	frameSize = atLeastOne(int(min(background.width, background.height) / 250))
+	frameSize = atLeastOne(min(background.width, background.height) / 250)
 	frame = frameCreator(pic.size, frameSize)
 
-	frameBox = (paddingXPx - frameSize * 4, paddingYPx - frameSize * 4,
+	frameBox = intBox(paddingXPx - frameSize * 4, paddingYPx - frameSize * 4,
 	            paddingXPx - frameSize * 4 + frame.size[0], paddingYPx - frameSize * 4 + frame.size[1])
 
 	background.paste(txtPic, (0, picHeight + paddingYPx))

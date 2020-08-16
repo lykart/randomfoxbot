@@ -1,1 +1,1 @@
-worker: python mainAIOGRAM.py
+worker: python bot.py

@@ -10,7 +10,6 @@ click==7.1.2
 colorama==0.4.3
 DAWG-Python==0.7.2
 docopt==0.6.2
-Flask==1.1.2
 gunicorn==20.0.4
 idna==2.10
 itsdangerous==1.1.0
@@ -28,7 +27,6 @@ qrtools==0.0.2
 requests==2.24.0
 rsa==4.6
 six==1.15.0
-Telethon==1.14.0
 urllib3==1.25.9
 Werkzeug==1.0.1
 yarl==1.4.2
