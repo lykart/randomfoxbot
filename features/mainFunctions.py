@@ -160,7 +160,7 @@ def createQR(txt):
 	img = qr.make_image(fill_color="#f27122", back_color="#141414")
 	img = img.convert('RGBA')
 
-	foxLogo = Image.open("resources\\foxLogo.png")
+	foxLogo = Image.open("resources/foxLogo.png")
 
 	imWidth = img.width
 

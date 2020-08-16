@@ -6,7 +6,7 @@ from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 
-pathToFont = 'resources\\times.ttf'
+pathToFont = 'resources/times.ttf'
 
 
 # Принимает 2 числа, возвращает кортеж из их целых составляющих
@@ -166,7 +166,7 @@ def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
 
 
 def getBackWidthFromPicWidth(picWidth):
-	padding = 1 / 9  # от размера изображения по каждой из сторон
+	padding = 1 / 8  # отступ (от размера изображения по каждой из сторон)
 	paddingXPx = int(picWidth * padding)
 
 	return picWidth + paddingXPx * 2
