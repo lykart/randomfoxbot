@@ -6,7 +6,7 @@ from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 
-pathToFont = 'times.ttf'
+pathToFont = 'resources\\times.ttf'
 
 
 # Принимает 2 числа, возвращает кортеж из их целых составляющих
