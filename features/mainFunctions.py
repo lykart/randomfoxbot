@@ -15,6 +15,8 @@ from time import time
 from datetime import datetime
 
 from features.demotivatorCreator import intBox
+from resources.links import     \
+	pathToFoxLogo               #
 
 # TODO: Очереди рандомного контента (для ускорения работы бота)
 # wikiArticlesQueue = queue.Queue(maxsize=30)
@@ -160,7 +162,7 @@ def createQR(txt):
 	img = qr.make_image(fill_color="#f27122", back_color="#141414")
 	img = img.convert('RGBA')
 
-	foxLogo = Image.open("resources/foxLogo.png")
+	foxLogo = Image.open(pathToFoxLogo)
 
 	imWidth = img.width
 

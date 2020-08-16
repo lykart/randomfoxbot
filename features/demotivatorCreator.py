@@ -1,12 +1,13 @@
+from resources.links import     \
+	pathToFont                  #
+
 import re
 
 from time import time
-from typing import Tuple
+from typing import          \
+	Tuple,      Optional    #
 
 from PIL import Image, ImageDraw, ImageFont
-
-
-pathToFont = 'resources/times.ttf'
 
 
 # Принимает 2 числа, возвращает кортеж из их целых составляющих
@@ -56,13 +57,13 @@ def textLineBreak(text: str, n: int) -> str:
 
 
 # Удаление лишних пробелов
-def textPreparation(text):
+def textPreparation(text: str) -> str:
 	text = re.sub(r'\s{2,}', ' ', text)
 	return text.strip()
 
 
 # Проверка, является ли изображением, обрабатываемым PIL
-def isPic(pic):
+def isPic(pic: Image) -> bool:
 	try:
 		pic.copy()
 	except:
@@ -70,7 +71,7 @@ def isPic(pic):
 	return True
 
 
-def tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange):
+def tryToMatchTextWidthByFontSize(txt: str, targetFontSize: int, txtFieldWidth: int, howMuchCanFontChange: int) -> int:
 	_font = ImageFont.truetype(pathToFont, targetFontSize)
 
 	txtDrawer = ImageDraw.Draw(
@@ -100,7 +101,7 @@ def tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCan
 	return fontSize
 
 
-def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: int, wordsCount: int) -> str:
+def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: int, wordsCount: int) -> [str, bool]:
 	_font = ImageFont.truetype(pathToFont, fontSize)
 
 	txtDrawer = ImageDraw.Draw(
@@ -129,12 +130,18 @@ def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: in
 
 	txt = textLineBreak(txt, breakedWords)
 
-	return txt
+	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
+	if txtWidth > txtFieldWidth:
+		isDone = False
+	else:
+		isDone = True
+
+	return txt, isDone
 
 
 # Обрабатывает текст так, чтобы он влез в картинку
-def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
-                  canLiningChange: bool, howMuchCanFontChange: int = 0):
+def textException(txtDrawer: ImageDraw, txt: str, txtFieldWidth: int, targetFontSize: int,
+                  canLiningChange: bool, howMuchCanFontChange: int=None) -> [str, int]:
 	fontSize = targetFontSize
 	_font = ImageFont.truetype(pathToFont, fontSize)
 	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
@@ -148,10 +155,10 @@ def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
 
 	wordsCount = len(textPreparation(txt).split())
 	if canLiningChange and wordsCount > 1:
-		txt = minimizingTextWidthByLiningChange(txt, targetFontSize, txtFieldWidth, wordsCount)
+		temp = minimizingTextWidthByLiningChange(txt, targetFontSize, txtFieldWidth, wordsCount)
 
-		txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-		if txtWidth < txtFieldWidth:
+		txt = temp[0]
+		if temp[-1]:
 			return txt, fontSize
 
 	if howMuchCanFontChange and canLiningChange:
@@ -165,18 +172,17 @@ def textException(txtDrawer, txt, txtFieldWidth, targetFontSize: int,
 		raise ValueError("Слишком длинный текст")
 
 
-def getBackWidthFromPicWidth(picWidth):
-	padding = 1 / 8  # отступ (от размера изображения по каждой из сторон)
-	paddingXPx = int(picWidth * padding)
+def getBackWidthFromPicWidth(picWidth: int) -> int:
+	padding: float = 1 / 8  # отступ (от размера изображения по каждой из сторон)
+	paddingXPx: int = int(picWidth * padding)
 
 	return picWidth + paddingXPx * 2
 
 
 # Функция создания картинки подписи
-def txtPicCreator(hTxt, /, picWidth=None, subTxt=None, backWidth=None, picPath=None):
-	if backWidth:
-		pass
-	elif picWidth:
+def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
+                  backWidth: int=None, picPath: str=None) -> Image:
+	if picWidth:
 		backWidth = getBackWidthFromPicWidth(picWidth)
 	elif picPath:
 		pic = Image.open(picPath)
@@ -245,7 +251,7 @@ def txtPicCreator(hTxt, /, picWidth=None, subTxt=None, backWidth=None, picPath=N
 
 
 # Функция создания белой рамки
-def frameCreator(picSize, frameSize):
+def frameCreator(picSize: Tuple[int, int], frameSize: int) -> Image:
 	picWidth, picHeight = picSize
 
 	frameSizeBox = intBox(picWidth + frameSize * 8, picHeight + frameSize * 8)
@@ -265,7 +271,9 @@ def atLeastOne(x: float) -> int:
 
 
 # Основная функция создания демотиватора
-def demotivatorCreator(picPath, headerTxt=None, subtitleTxt=None, txtPic=None):
+def demotivatorCreator(picPath: str, headerTxt: str=None, subtitleTxt: str=None,
+                       txtPic: Image = None) -> Image:
+
 	pic = Image.open(picPath)
 
 	pic = picException(pic)
