@@ -142,6 +142,7 @@ async def demoFinisher(message: Message, state: FSMContext):
 		try:
 			hTxt = data['header']['text']
 			txtPic = txtPicCreator(hTxt=hTxt, subTxt=subTxt, picPath=data['pic'])
+
 		except ValueError as exception:
 			messageToUser = exception.args[0]
 			exceptionIn = exception.args[1]

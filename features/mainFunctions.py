@@ -14,7 +14,7 @@ from random import choice, random
 from time import time
 from datetime import datetime
 
-from Test.Old.demotivatorCreator import intBox
+from features.demotivatorCreator import intBox
 
 # TODO: Очереди рандомного контента (для ускорения работы бота)
 # wikiArticlesQueue = queue.Queue(maxsize=30)
