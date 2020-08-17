@@ -248,8 +248,9 @@ def textDrawer(drawer, txt, topPadding, fontSize, fontType: str='regular'):
 	drawer.text(priceTxtBox, txt, font=_font, fill=textColor, align='center')
 
 
-def fsCreator(timeTxt, priceTxt, nameTxt) -> str:
-	priceTxt += ' ₽'
+def fsCreator(timeTxt: str, priceTxt: str, nameTxt: str) -> str:
+	priceTxt = priceTxt.replace(".", ",") + ' ₽'
+	nameTxt = nameTxt.upper()
 
 	fs = Image.open(pathToFs)
 
