@@ -5,7 +5,7 @@ import re
 
 from time import time
 from typing import          \
-	Tuple,      Optional    #
+	Tuple                   #
 
 from PIL import Image, ImageDraw, ImageFont
 

@@ -7,7 +7,7 @@ import qrtools
 import re
 import string
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from aiogram.types.input_file import InputFile
 
 from random import choice, random
@@ -15,8 +15,9 @@ from time import time
 from datetime import datetime
 
 from features.demotivatorCreator import intBox
-from resources.links import     \
-	pathToFoxLogo               #
+from resources.links import             \
+	pathToFoxLogo,      pathToFs,       \
+	pathToSfd,          pathToSfd_bold  #
 
 # TODO: Очереди рандомного контента (для ускорения работы бота)
 # wikiArticlesQueue = queue.Queue(maxsize=30)
@@ -225,3 +226,53 @@ def getCurrentTime() -> str:
 		currSec = f'{currTime.second}'
 
 	return currHour + ":" + currMinute + ":" + currSec
+
+
+def textDrawer(drawer, txt, topPadding, fontSize, fontType: str='regular'):
+	IPhoneScreenWidth, IPhoneScreenHeight = 640, 1136
+
+	textColor = (255, 255, 255, 225)
+
+	pathToFont: str
+	if fontType == "bold":
+		pathToFont = pathToSfd_bold
+	else:
+		pathToFont = pathToSfd
+
+	_font = ImageFont.truetype(pathToFont, fontSize)
+
+	priceTxtWidth, priceTxtHeight = drawer.textsize(txt, _font)
+	priceTxtBox = intBox(IPhoneScreenWidth / 2 - priceTxtWidth / 2, topPadding,
+	                     IPhoneScreenWidth / 2 + priceTxtWidth / 2, topPadding + priceTxtHeight)
+
+	drawer.text(priceTxtBox, txt, font=_font, fill=textColor, align='center')
+
+
+def fsCreator(timeTxt, priceTxt, nameTxt) -> str:
+	priceTxt += ' ₽'
+
+	fs = Image.open(pathToFs)
+
+	IPhoneScreenWidth, IPhoneScreenHeight = 640, 1136
+
+	topPadding_time = 7
+	topPadding_price = 384
+	topPadding_name = 478
+
+	textIMG = Image.new('RGBA', (IPhoneScreenWidth, IPhoneScreenHeight), (0, 0, 0, 0))
+	txtDrawer = ImageDraw.Draw(textIMG)
+
+	fontSize_time = 22
+	fontSize_price = 57
+	fontSize_name = 27
+
+	textDrawer(txtDrawer, timeTxt, topPadding_time, fontSize_time, fontType="bold")
+	textDrawer(txtDrawer, priceTxt, topPadding_price, fontSize_price, fontType="bold")
+	textDrawer(txtDrawer, nameTxt, topPadding_name, fontSize_name, fontType="regular")
+
+	fs = Image.alpha_composite(fs, textIMG)
+
+	IMGpath = str(time()) + ".png"
+	fs.save(IMGpath)
+
+	return IMGpath

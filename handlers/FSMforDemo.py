@@ -3,6 +3,8 @@ from misc import dp, bot
 from features.demotivatorCreator import         \
 	txtPicCreator,      demotivatorCreator      #
 
+from features.mainFunctions import fsCreator
+
 
 from aiogram.types import   \
 	Message,                \
@@ -175,3 +177,43 @@ async def demoFinisher(message: Message, state: FSMContext):
 
 
 ########################## FSM для генерации демотиваторов #############################
+
+
+class sfdFSM(StatesGroup):
+	check = State()
+	text = State()
+	generating = State()
+
+
+@dp.message_handler(filters.Text(equals="sfd"), state="*")
+async def demoCallingHandler(message: Message, state: FSMContext):
+	current_state = await state.get_state()
+	if current_state is not None:
+		return
+
+	await sfdFSM.check.set()
+
+
+@dp.message_handler(state=sfdFSM.check)
+async def demoCallingHandler(message: Message, state: FSMContext):
+	if message.text == "Cr":
+		await sfdFSM.text.set()
+	else:
+		await state.finish()
+
+
+@dp.message_handler(state=sfdFSM.text)
+async def subtitleDemoHandler(message: Message, state: FSMContext):
+	if message.text:
+		print("nott")
+		try:
+			_time, _price, _name = message.text.split('\n')
+			IMGpath = fsCreator(_time, _price, _name)
+
+			chatID = message.chat.id
+			with open(IMGpath, 'rb') as doc:
+				await bot.send_document(chatID, doc)
+			remove(IMGpath)
+		finally:
+			await state.finish()
+# ^-^
