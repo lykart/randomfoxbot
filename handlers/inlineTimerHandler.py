@@ -28,7 +28,7 @@ async def timerInlineHandler(inline_query: InlineQuery):
 	if secCount[-1] == '+':
 		secCount = secCount[::-1].replace("+", "", 1)[::-1]
 
-	eval(secCount)
+	secCount = eval(secCount)
 
 	if secCount > 7200 or secCount < 1:
 		articleTitle = "Таймер не будет запущен"
