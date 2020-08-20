@@ -15,10 +15,8 @@ from time import time
 import re
 
 
-@dp.inline_handler(regexp=r'(?i)timer\s+(\d+[smh]){1,3}')
-async def timerInlineHandler(inline_query: InlineQuery):
-
-	secCount = inline_query.query.strip() \
+def evalSecondsCount(query: str):
+	secCount = query.strip() \
 		.replace("timer", "") \
 		.replace("s", "+") \
 		.replace("m", "*60+") \
@@ -28,7 +26,13 @@ async def timerInlineHandler(inline_query: InlineQuery):
 	if secCount[-1] == '+':
 		secCount = secCount[::-1].replace("+", "", 1)[::-1]
 
-	secCount = eval(secCount)
+	return eval(secCount)
+
+
+@dp.inline_handler(regexp=r'(?i)timer\s+(\d+[smh]){1,3}')
+async def timerInlineHandler(inline_query: InlineQuery):
+
+	secCount = evalSecondsCount(inline_query.query)
 
 	if secCount > 7200 or secCount < 1:
 		articleTitle = "Таймер не будет запущен"
@@ -88,9 +92,9 @@ async def some_callback_handler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
-@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+\d+', chosen_inline_query.query))
+@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+(\d+[smh]){1,3}', chosen_inline_query.query))
 async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
-	secCount = int(chosen_inline_query.query.strip().replace("timer", ""))
+	secCount = evalSecondsCount(chosen_inline_query.query)
 	userId = chosen_inline_query.from_user.id
 	inlineMessageId = chosen_inline_query.inline_message_id
 
