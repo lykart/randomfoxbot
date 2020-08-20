@@ -18,12 +18,15 @@ import re
 @dp.inline_handler(regexp=r'(?i)timer\s+(\d+[smh]){1,3}')
 async def timerInlineHandler(inline_query: InlineQuery):
 
-	secCount = inline_query.query.strip()\
-		.replace("timer", "")\
-		.replace("s", "*1")\
-		.replace("m", "*60")\
-		.replace("h", "*60*60")\
+	secCount = inline_query.query.strip() \
+		.replace("timer", "") \
+		.replace("s", "+") \
+		.replace("m", "*60+") \
+		.replace("h", "*60*60+") \
 		.replace(" ", "")
+
+	if secCount[-1] == '+':
+		secCount = secCount[::-1].replace("+", "", 1)[::-1]
 
 	eval(secCount)
 
