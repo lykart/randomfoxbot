@@ -15,11 +15,19 @@ from time import time
 import re
 
 
-@dp.inline_handler(regexp=r'(?i)timer\s+\d+')
+@dp.inline_handler(regexp=r'(?i)timer\s+(\d+[smh]){1,3}')
 async def timerInlineHandler(inline_query: InlineQuery):
-	secCount = int(inline_query.query.strip().replace("timer", ""))
 
-	if secCount > 3600 or secCount < 1:
+	secCount = inline_query.query.strip()\
+		.replace("timer", "")\
+		.replace("s", "*1")\
+		.replace("m", "*60")\
+		.replace("h", "*60*60")\
+		.replace(" ", "")
+
+	eval(secCount)
+
+	if secCount > 7200 or secCount < 1:
 		articleTitle = "Таймер не будет запущен"
 		isWrong = True
 	else:
