@@ -54,6 +54,14 @@ helpList = \
 		"Введите \"wiki\" или \"wikipedia\" в любом регистре, и Лис быстро сбегает до Вики и "
 		"принесёт ссылку на случайную статью из русскоязычной Википедии"
 	], [
+			'Случайное целое число:',
+
+			'\"num\" и число от какого, после до какого',
+
+			'',
+
+			'Введите \"num\" и после числа через пробел - границы в которых должно быть получившееся число'
+	], [
 		'Ответ на вопрос - \"Да\Нет\":',
 
 		'Вопрос, заканчивающийся на \"?\"',
@@ -253,8 +261,8 @@ async def randNumInlineQueryHandler(inline_query: InlineQuery):
 		InlineQueryResultArticle(
 			id=str(time()),
 			title=f'Случайное число от {num[0]} до {num[1]}:',
-			description=randomNumber,
 			thumb_url=foxLogoPreview,
+			description="Что же он выберет?",
 			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
 	]
 

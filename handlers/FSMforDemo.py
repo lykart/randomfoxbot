@@ -21,6 +21,18 @@ from os import remove
 from time import time
 
 
+# Стандартная reply-keyboard:
+def getDefaultReplyKeyboard():
+	markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
+	markup.add("Демотиватор")
+	markup.insert("Пρопустить подзаголовок")
+	markup.add("Разспознать QR")
+	markup.insert("ʘтмена")
+
+	return markup
+
+
+
 ############################ FSM для генерации демотиваторов #################################
 
 
@@ -35,7 +47,7 @@ class DemoFSM(StatesGroup):
 
 
 # Хэндлер отмены
-@dp.message_handler(state='*', regexp=r'(?i)/отмена|/cancel|ʘтмена')
+@dp.message_handler(state=DemoFSM, regexp=r'(?i)/отмена|/cancel|ʘтмена')
 async def cancelHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
@@ -59,10 +71,7 @@ async def demoCallingHandler(message: Message, state: FSMContext):
 	if current_state is not None:
 		return
 
-	markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
-	markup.add("Демотиватор")
-	markup.insert("Пρопустить подзаголовок")
-	markup.add("ʘтмена")
+	markup = getDefaultReplyKeyboard()
 
 	await DemoFSM.pic.set()
 	await message.answer("Отправь картинку, которую хотел бы видеть в демотиваторе", reply_markup=markup)

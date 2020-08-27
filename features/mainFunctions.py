@@ -3,7 +3,6 @@ import aiohttp
 import json
 import pymorphy2
 import qrcode
-import qrtools
 import re
 import string
 
@@ -197,14 +196,48 @@ async def uploadInputFileToTelegram(imgPath, bot):
 	return imgFileId
 
 
+def imageCorrection(img: Image, /, thresh: int=150, doInvert: bool=False) -> Image:
+	from PIL.ImageChops import invert
+
+	if doInvert:
+		img = invert(img)
+
+	fn = lambda x: 255 if x > thresh else 0
+	img = img.convert('L').point(fn, mode='1')
+
+	return img
+
+
 def decodeQr(picPath):
-	qr = qrtools.QR()
-	qr.decode(picPath)
+	from pyzbar.pyzbar import decode, ZBarSymbol
 
-	# TODO: Реализовать взаимодействие пользователя
-	#   с распознованием qr-кодов через inline, желательно
+	img = Image.open(picPath)
 
-	return qr.data
+	thresh, doInvert = 150, True
+	baseThresh = thresh
+
+	for i in range(10):
+		data = decode(img, symbols=[ZBarSymbol.QRCODE])
+
+		if data:
+			break
+
+		img = imageCorrection(img, thresh=thresh, doInvert=doInvert)
+
+		doInvert = not doInvert
+
+		if i % 2 == 0 and i != 0:
+			# i=2 -> baseThresh - 25*1
+			# i=4 -> baseThresh + 25*1
+			# i=6 -> baseThresh - 25*2
+			# i=8 -> baseThresh + 25*2
+
+			thresh = baseThresh + ((-1) ** ((i % 4) / 2)) * 25 * (i / 2)
+
+	data = [decoded.data.decode('utf-8') for decoded in data]
+	data = ',\n'.join(data)
+
+	return data
 
 
 def getCurrentTime() -> str:
