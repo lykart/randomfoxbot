@@ -147,6 +147,21 @@ def randomPopGenerator(n):
 	return _str
 
 
+def randomPhrase():
+	from resources.links import pathToRandomPhrases
+	randomPhrases = open(pathToRandomPhrases, 'r', encoding='utf-8').read()
+
+	randomPhrases = randomPhrases.split('\n\n')
+	randomPhrases = [phrase.replace('\n', '', 1) for phrase in randomPhrases if phrase[0] == '\n']
+
+	phrase = choice(randomPhrases).split('\n')
+
+	if len(phrase) == 1:
+		phrase.append(None)
+
+	return phrase
+
+
 def createQR(txt):
 
 	qr = qrcode.QRCode(
@@ -236,6 +251,7 @@ def decodeQr(picPath):
 
 	data = [decoded.data.decode('utf-8') for decoded in data]
 	data = ',\n'.join(data)
+
 
 	return data
 

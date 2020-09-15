@@ -73,9 +73,11 @@ async def qrCodeAcceptor(message: Message, state: FSMContext):
 	qrData = decodeQr(photoPath)
 	remove(data['qr'])
 
+	from validators import url as isURL
+
 	if qrData:
 		messageToUser = markdown.bold("Содержание QR-кода:") + \
-		                markdown.code(f"\n{qrData}")
+		                f'\n{qrData}' if isURL(qrData) else markdown.code(f"\n{qrData}")
 	else:
 		messageToUser = markdown.bold("Не удалось считать QR-код.")
 

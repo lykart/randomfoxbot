@@ -10,6 +10,7 @@ pathToFoxLogo = join(pathToResources, "foxLogo.png")
 pathToFs = join(pathToResources, "fs.png")
 pathToSfd = join(pathToResources, "sfd_medium.ttf")
 pathToSfd_bold = join(pathToResources, "sfd_bold.ttf")
+pathToRandomPhrases = join(pathToResources, 'phrases.txt')
 
 helpImages = [
 	'https://i.ibb.co/0Ydh6nV/qm.png',  # Вопросительный знак

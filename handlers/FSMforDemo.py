@@ -3,7 +3,8 @@ from misc import dp, bot
 from features.demotivatorCreator import         \
 	txtPicCreator,      demotivatorCreator      #
 
-from features.mainFunctions import fsCreator
+from features.mainFunctions import \
+	fsCreator,          randomPhrase
 
 
 from aiogram.types import   \
@@ -23,10 +24,11 @@ from time import time
 
 # Стандартная reply-keyboard:
 def getDefaultReplyKeyboard():
-	markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=2)
+	markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=3)
 	markup.add("Демотиватор")
 	markup.insert("Пρопустить подзаголовок")
-	markup.add("Разспознать QR")
+	markup.insert("Случɑйная подпись")
+	markup.add("Распознать QR")
 	markup.insert("ʘтмена")
 
 	return markup
@@ -91,10 +93,21 @@ async def picDemoHandler(message: Message, state: FSMContext):
 @dp.message_handler(state=DemoFSM.header)
 async def headerDemoHandler(message: Message, state: FSMContext):
 	if message.text:
-		await state.update_data(header={"text": message.text, "message": message})
+		if message.text == 'Случɑйная подпись':
+			header, subtitle = randomPhrase()
 
-		await DemoFSM.subtitle.set()
-		await message.answer("А в подзаголовке?")
+			async with state.proxy() as data:
+				data['header'] = {"text": header, "message": message}
+				data['subtitle'] = {"text": subtitle, "message": message}
+
+			await DemoFSM.generationDemo.set()
+			await demoFinisher(message, state)
+
+		else:
+			await state.update_data(header={"text": message.text, "message": message})
+
+			await DemoFSM.subtitle.set()
+			await message.answer("А в подзаголовке?")
 	else:
 		await message.reply("Не похоже на текст...")
 

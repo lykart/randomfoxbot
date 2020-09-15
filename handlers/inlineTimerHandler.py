@@ -69,7 +69,6 @@ async def some_callback_handler(inline_query: InlineQuery):
 	userId = inline_query.from_user.id
 
 	if userId in doingTimersFrom:
-		# print(userId, doingTimersFrom)
 		doingTimersFrom.remove(userId)
 
 		items = [
@@ -77,7 +76,7 @@ async def some_callback_handler(inline_query: InlineQuery):
 				id=str(time()),
 				title="Завершаю таймер...",
 				thumb_url=foxLogoPreview,
-				input_message_content=InputTextMessageContent(""))
+				input_message_content=InputTextMessageContent("ну и что ты тут ожидаешь увидеть?"))
 		]
 	else:
 		items = [
@@ -86,7 +85,7 @@ async def some_callback_handler(inline_query: InlineQuery):
 				title="Не могу найти таймер",
 				description="возможно, ни одного не запущено вами",
 				thumb_url=foxLogoPreview,
-				input_message_content=InputTextMessageContent(""))
+				input_message_content=InputTextMessageContent("Вы можете запустить таймер, выполнив запрос \"timer\""))
 		]
 
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
