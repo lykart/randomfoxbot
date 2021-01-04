@@ -16,6 +16,7 @@ from aiogram.dispatcher.filters.state import    \
 	State,                                      \
 	StatesGroup                                 #
 
+from validators import url as isURL
 
 from os import remove
 from time import time
@@ -72,8 +73,6 @@ async def qrCodeAcceptor(message: Message, state: FSMContext):
 
 	qrData = decodeQr(photoPath)
 	remove(data['qr'])
-
-	from validators import url as isURL
 
 	if qrData:
 		messageToUser = markdown.bold("Содержание QR-кода:") + \

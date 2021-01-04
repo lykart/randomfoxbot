@@ -9,6 +9,8 @@ import string
 from PIL import Image, ImageDraw, ImageFont
 from aiogram.types.input_file import InputFile
 
+from pyzbar.pyzbar import decode, ZBarSymbol
+
 from random import choice, random
 from time import time
 from datetime import datetime
@@ -223,8 +225,6 @@ def imageCorrection(img: Image, /, thresh: int=150, doInvert: bool=False) -> Ima
 
 
 def decodeQr(picPath):
-	from pyzbar.pyzbar import decode, ZBarSymbol
-
 	img = Image.open(picPath)
 
 	thresh, doInvert = 150, True
