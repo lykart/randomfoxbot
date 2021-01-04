@@ -18,7 +18,7 @@ from resources.links import             \
 	pathToFoxLogo,      pathToFs,       \
 	pathToSfd,          pathToSfd_bold  #
 
-# TODO: Очереди рандомного контента (для ускорения работы бота)
+#  TODO: Очереди рандомного контента (для ускорения работы бота)
 # wikiArticlesQueue = queue.Queue(maxsize=30)
 # ytVideosQueue = queue.Queue(maxsize=30)
 
@@ -151,8 +151,7 @@ def randomPhrase():
 	from resources.links import pathToRandomPhrases
 	randomPhrases = open(pathToRandomPhrases, 'r', encoding='utf-8').read()
 
-	randomPhrases = randomPhrases.split('\n\n')
-	randomPhrases = [phrase.replace('\n', '', 1) for phrase in randomPhrases if phrase[0] == '\n']
+	randomPhrases = randomPhrases.split('\n\n\n')
 
 	phrase = choice(randomPhrases).split('\n')
 

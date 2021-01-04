@@ -4,12 +4,15 @@ foxLogoPreview = 'https://i.ibb.co/0tzywHx/Unt22itled-1.png'
 
 pathToResources = dirname(__file__)
 
+pathToDB = join(pathToResources, "db.json")
+
 pathToFont = join(pathToResources, "times.ttf")
 pathToFoxLogo = join(pathToResources, "foxLogo.png")
 
 pathToFs = join(pathToResources, "fs.png")
 pathToSfd = join(pathToResources, "sfd_medium.ttf")
 pathToSfd_bold = join(pathToResources, "sfd_bold.ttf")
+
 pathToRandomPhrases = join(pathToResources, 'phrases.txt')
 
 helpImages = [

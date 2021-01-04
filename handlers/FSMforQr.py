@@ -48,7 +48,7 @@ async def cancelHandler(message: Message, state: FSMContext):
 	await message.answer('Отменено.')
 
 
-@dp.message_handler(filters.Text(equals="Разспознать QR"), state="*")
+@dp.message_handler(filters.Text(equals="Распознать QR"), state="*")
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)qr|qrcode']), state="*")
 async def demoCallingHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()

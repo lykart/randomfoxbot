@@ -47,6 +47,17 @@ class DemoFSM(StatesGroup):
 	headerChanging = State()
 	subtitleChanging = State()
 
+async def setSubtitle(self, message, state):
+		if message.text == "Пρопустить подзаголовок":
+			async with state.proxy() as data:
+				data['subtitle'] = None
+		else:
+			async with state.proxy() as data:
+				data['subtitle'] = {"text": message.text, "message": message}
+
+		await DemoFSM.generationDemo.set()
+		await demoFinisher(message, state)
+
 
 # Хэндлер отмены
 @dp.message_handler(state=DemoFSM, regexp=r'(?i)/отмена|/cancel|ʘтмена')
