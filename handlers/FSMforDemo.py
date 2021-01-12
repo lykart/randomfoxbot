@@ -6,10 +6,15 @@ from features.demotivatorCreator import         \
 from features.mainFunctions import \
 	fsCreator,          randomPhrase
 
+from features.dbInteractions import \
+	getPhotoReceivedUserSettings
+
+from .default import getDefaultReplyKeyboard
+from .FSMforQr import qrCodeAcceptor
+
 
 from aiogram.types import   \
-	Message,                \
-	ReplyKeyboardMarkup     #
+	Message                 #
 from aiogram.dispatcher import      \
 	FSMContext,                     \
 	filters                         #
@@ -22,20 +27,39 @@ from os import remove
 from time import time
 
 
-# Стандартная reply-keyboard:
-def getDefaultReplyKeyboard():
-	markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True, row_width=3)
-	markup.add("Демотиватор")
-	markup.insert("Пρопустить подзаголовок")
-	markup.insert("Случɑйная подпись")
-	markup.add("Распознать QR")
-	markup.insert("ʘтмена")
-
-	return markup
+# TODO: Можно добавить универсальную функцию редактирования ЗАГОЛОВКА и ПОДЗАГОЛОВКА демотиватора в классе
+############################ Демотиватор ПО УМОЛЧАНИЮ #################################
 
 
+@dp.message_handler(content_types=['photo'], state=None)
+async def picDefaultActionsHandler(message: Message, state: FSMContext):
+	userID = message.from_user.id
 
-############################ FSM для генерации демотиваторов #################################
+	userSettings = getPhotoReceivedUserSettings(userID)
+
+	if userSettings == "demotivator":
+		await DemoFSM.subtitle.set()
+		await picDemoHandler(message, state)
+	elif userSettings == "randomDemotivator":
+		header, subtitle = randomPhrase()
+
+		async with state.proxy() as data:
+			photoName = str(time()) + ".jpg"
+			await message.photo[-1].download(photoName)
+
+			data['pic'] = photoName
+			data['header'] = {"text": header, "message": message}
+			data['subtitle'] = {"text": subtitle, "message": message}
+
+		await DemoFSM.generationDemo.set()
+		await demoFinisher(message, state)
+	elif userSettings == "QRdecode":
+		await qrCodeAcceptor(message, state)
+	else:
+		return
+
+
+##################### FSM для генерации демотиваторов #################################
 
 
 # Класс Машины Состояний
@@ -47,21 +71,22 @@ class DemoFSM(StatesGroup):
 	headerChanging = State()
 	subtitleChanging = State()
 
-async def setSubtitle(self, message, state):
-		if message.text == "Пρопустить подзаголовок":
-			async with state.proxy() as data:
-				data['subtitle'] = None
-		else:
-			async with state.proxy() as data:
-				data['subtitle'] = {"text": message.text, "message": message}
 
-		await DemoFSM.generationDemo.set()
-		await demoFinisher(message, state)
+async def setSubtitle(message, state):
+	if message.text == "Пρопустить подзаголовок":
+		async with state.proxy() as data:
+			data['subtitle'] = None
+	else:
+		async with state.proxy() as data:
+			data['subtitle'] = {"text": message.text, "message": message}
+
+	await DemoFSM.generationDemo.set()
+	await demoFinisher(message, state)
 
 
 # Хэндлер отмены
 @dp.message_handler(state=DemoFSM, regexp=r'(?i)/отмена|/cancel|ʘтмена')
-async def cancelHandler(message: Message, state: FSMContext):
+async def cancelDemoHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
 		return
@@ -113,7 +138,6 @@ async def headerDemoHandler(message: Message, state: FSMContext):
 
 			await DemoFSM.generationDemo.set()
 			await demoFinisher(message, state)
-
 		else:
 			await state.update_data(header={"text": message.text, "message": message})
 
@@ -249,4 +273,6 @@ async def subtitleDemoHandler(message: Message, state: FSMContext):
 			remove(IMGpath)
 		finally:
 			await state.finish()
+
+
 # ^-^

@@ -3,8 +3,7 @@ from misc import dp
 from features.mainFunctions import \
 	decodeQr,   imageCorrection
 
-
-from .FSMforDemo import getDefaultReplyKeyboard
+from .default import getDefaultReplyKeyboard
 
 from aiogram.utils import markdown
 from aiogram.types import Message
@@ -33,7 +32,7 @@ class QrFSM(StatesGroup):
 
 # Хэндлер отмены
 @dp.message_handler(state=QrFSM, regexp=r'(?i)/отмена|/cancel|ʘтмена')
-async def cancelHandler(message: Message, state: FSMContext):
+async def cancelQrHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
 		return
@@ -51,7 +50,7 @@ async def cancelHandler(message: Message, state: FSMContext):
 
 @dp.message_handler(filters.Text(equals="Распознать QR"), state="*")
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)qr|qrcode']), state="*")
-async def demoCallingHandler(message: Message, state: FSMContext):
+async def qrCallingHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is not None:
 		return
@@ -87,5 +86,6 @@ async def qrCodeAcceptor(message: Message, state: FSMContext):
 	)
 
 	await state.finish()
+
 
 # ^-^

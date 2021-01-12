@@ -7,38 +7,57 @@ photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivato
 User = Query()
 
 
-def insertUserSettings(
-		userID: int = 0,
+def defaultBlueprint(userID, defaultAction="nothing"):
+	return {
+		'userID': userID,
+	    'photoReceived': defaultAction
+	}
 
-		photoReceived: str = "nothing",
-		skipSubtitle: bool = False,
-) -> bool:
 
-	if (photoReceived not in photoReceivedPossible) or (userID == 0):
+def addUser(userID):
+	if db.contains(User.userID == userID):
+		return False
+	else:
+		userDocument = defaultBlueprint(userID=userID)
+		db.insert(userDocument)
+
+	return userDocument
+
+
+def updateUserSettings(userID: int, photoReceived: str = None) -> bool:
+	if photoReceived not in photoReceivedPossible:
 		return False
 
-	if db.contains(User.userID == userID):
-		db.update({
-				'photoReceived': photoReceived,
-				'skipSubtitle': skipSubtitle
-			},
+	updatedSettings = {}
+	if photoReceived:
+		updatedSettings.update({"photoReceived": photoReceived})
+
+	if updatedSettings:
+		db.update(
+			updatedSettings,
 			User.userID == userID
 		)
 	else:
-		db.insert({
-			'userID': userID,
-
-			'photoReceived': photoReceived,
-			'skipSubtitle': skipSubtitle
-		})
+		print(f"Error in {userID} settings update (не передано аргументов для изменения)")
+		return False
 
 	return True
 
 
-def getUserSettings(userID: int = 0) -> dict or bool:
-	if userID == 0:
-		return False
+def getPhotoReceivedUserSettings(userID: int) -> str:
+	try:
+		userDocument = db.search(User.userID == userID)[0]
+	except:
+		print("Error in searching in DB")
+		return None
 
-	return db.search(User.userID == userID)
+	return userDocument.get("photoReceived")
+
+
+### something ###
+
+
+def statsBlueprint(demoCreated, inlineAnswered):
+	return {'demoCreated': 0, 'inlineAnswered': 0}
 
 # ^_^
