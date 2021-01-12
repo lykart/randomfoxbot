@@ -23,15 +23,19 @@ def evalSecondsCount(query: str):
 		.replace("h", "*60*60+") \
 		.replace(" ", "")
 
+	try:
+		secCount = secCount[secCount.find(")")+1:]
+	except:
+		None
+
 	if secCount[-1] == '+':
 		secCount = secCount[::-1].replace("+", "", 1)[::-1]
 
 	return eval(secCount)
 
 
-@dp.inline_handler(regexp=r'(?i)timer\s+(\d+[smh]){1,3}')
+@dp.inline_handler(regexp=r'(?i)timer\s+\(.+\)\s+(\d+[smh]){1,3}')
 async def timerInlineHandler(inline_query: InlineQuery):
-
 	secCount = evalSecondsCount(inline_query.query)
 
 	if secCount > 7200 or secCount < 1:
@@ -91,9 +95,15 @@ async def some_callback_handler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
-@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+(\d+[smh]){1,3}', chosen_inline_query.query))
+@dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+\(.+\)\s+(\d+[smh]){1,3}', chosen_inline_query.query))
 async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
 	secCount = evalSecondsCount(chosen_inline_query.query)
+	queryText = chosen_inline_query.query
+	try:
+		text = queryText[queryText.find("(") + 1:queryText.find(")")]
+	except:
+		text = f"Таймер на {secCount} сек."
+
 	userId = chosen_inline_query.from_user.id
 	inlineMessageId = chosen_inline_query.inline_message_id
 
@@ -106,14 +116,18 @@ async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
 
 	doingTimersFrom.append(userId)
 
+	print(text)
 	startTime = time()
 	while secCount > 0:
 		currTime = time()
 		secCount -= int(currTime - startTime)
 		startTime = time()
 
+		button = inline_keyboard.InlineKeyboardButton(text=f"{secCount}", callback_data='awaiting')
+		inlineKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1, inline_keyboard=[[button]])
+
 		await sleep(1)
-		await bot.edit_message_text(text=f"{secCount}", inline_message_id=inlineMessageId)
+		await bot.edit_message_text(text=text, inline_message_id=inlineMessageId, reply_markup=inlineKeyboard)
 
 		if userId not in doingTimersFrom:
 			break
