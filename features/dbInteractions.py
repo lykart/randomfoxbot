@@ -1,5 +1,6 @@
 from tinydb import Query
 
+
 from misc import db
 
 

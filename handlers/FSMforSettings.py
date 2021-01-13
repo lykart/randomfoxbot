@@ -5,17 +5,12 @@ from features.dbInteractions import \
 	updateUserSettings,             \
 	getPhotoReceivedUserSettings    #
 
-from .FSMforDemo import getDefaultReplyKeyboard
 
 from aiogram.types import       \
 	Message, inline_keyboard,   \
-	callback_query, CallbackQuery         #
+	CallbackQuery               #
 from aiogram.dispatcher import      \
-	FSMContext,                     \
 	filters                         #
-from aiogram.dispatcher.filters.state import    \
-	State,                                      \
-	StatesGroup                                 #
 from aiogram.utils import markdown
 
 

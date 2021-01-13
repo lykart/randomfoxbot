@@ -92,8 +92,6 @@ def tryToMatchTextWidthByFontSize(txt: str, targetFontSize: int, txtFieldWidth: 
 
 			_font = ImageFont.truetype(pathToFont, fontSize)
 			txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
-
-			# print(txtWidth, txtFieldWidth, fontSize)
 		else:
 			raise ValueError("Слишком длинный текст: невозможно "
 			                 "вставить в границы демотиватора")
@@ -226,7 +224,6 @@ def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
 			temp = textException(txtDrawer, subTxt, txtFieldWidth, subFontSize,
 			                     howMuchCanFontChange=20, canLiningChange=True)
 		except ValueError:
-			# print(exc, ": Подзаголовок")
 			raise ValueError("Слишком длинный подзаголовок", "subtitle")
 
 		subTxt, fontSize = temp[0], temp[1]
@@ -292,7 +289,6 @@ def demotivatorCreator(picPath: str, headerTxt: str=None, subtitleTxt: str=None,
 		try:
 			txtPic = txtPicCreator(hTxt=headerTxt, subTxt=subtitleTxt, picWidth=backWidth)
 		except ValueError as exceptiopn:
-			# print(exceptiopn)
 			raise exceptiopn
 
 	else:
