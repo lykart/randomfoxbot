@@ -208,12 +208,29 @@ async def whoIAmInlineHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
 
 
+@dp.inline_handler(regexp=r'(?i)me\s+.+')
+async def meInlineQueryHandler(inline_query: InlineQuery):
+	text = inline_query.query
+	text = text.strip().replace("  ", " ").replace("me", "")
+	messToUser = markdown.bold(f"Лисёнок{text}")
+
+	items = [
+		InlineQueryResultArticle(
+			id=str(time()),
+			title='Лисёнок ',
+			description=text,
+			thumb_url=foxLogoPreview,
+			input_message_content=InputTextMessageContent(messToUser, parse_mode='MarkdownV2'))
+	]
+
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+
+
 # Обработчик ответа Да\Нет на вопрос Inline Query
 @dp.inline_handler(regexp=r'(?i)^(?=.*?\?)((?!или|or).)*$')
 async def questionInlineQueryHandler(inline_query: InlineQuery):
 	answer = yesOrNot()
 	messToUser = markdown.bold(inline_query.query) + '\n' + markdown.italic(answer)
-	print(messToUser)
 
 	items = [
 		InlineQueryResultArticle(
