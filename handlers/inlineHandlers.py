@@ -187,7 +187,7 @@ async def helpInlineHandler(inline_query: InlineQuery):
 		for i in range(len(helpList))
 	]
 
-	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=999999)
 
 
 # Обработчик запроса "Who am I?" Inline Query

@@ -9,7 +9,7 @@ User = Query()
 
 def defaultBlueprint(userID):
 	return {
-		'UserID': userID,
+		'userID': userID,
 		'photoReceived': "nothing",
 
 		"statistics": defaultStatsField()
