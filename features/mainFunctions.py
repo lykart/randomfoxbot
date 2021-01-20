@@ -19,6 +19,7 @@ from features.demotivatorCreator import intBox
 from resources.links import             \
 	pathToFoxLogo,      pathToFs,       \
 	pathToSfd,          pathToSfd_bold  #
+from misc import adminUserID
 
 #  TODO: Очереди рандомного контента (для ускорения работы бота)
 # wikiArticlesQueue = queue.Queue(maxsize=30)
@@ -192,7 +193,7 @@ def createQR(txt):
 
 
 async def uploadInputFileToTelegram(imgPath, bot):
-	chatID = '151605823'
+	chatID = adminUserID
 	img = InputFile(imgPath, filename='qr' + str(time()))
 
 	imgMessage = await bot.send_photo(

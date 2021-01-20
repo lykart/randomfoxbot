@@ -67,7 +67,6 @@ def photoReceivedOptionConversion(option: str) -> str:
 async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
 	if not isBack:
 		addUser(message.from_user.id)
-		print(f"User {message.from_user.id} added")
 
 	buttonsData = [
 		["Отправлено фото", "photoReceivedChanging"],

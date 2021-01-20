@@ -1,6 +1,6 @@
 from tinydb import Query
 from typing import Dict
-from misc import db
+from misc import db, bot, adminUserID
 
 
 photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivator"]
@@ -21,6 +21,7 @@ def addUser(userID):
 		return False
 	else:
 		userDocument = defaultBlueprint(userID=userID)
+		bot.send_message(adminUserID, f"User {userID} added")
 		db.insert(userDocument)
 
 	return userDocument
