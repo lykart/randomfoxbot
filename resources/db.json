@@ -1,5 +1,1 @@
-{"_default": {
-  "1": {"userID": 151605823, "photoReceived": "demotivator"},
-  "2": {"userID": 953337533, "photoReceived": "demotivator"},
-  "3": {"userID": 1865815, "photoReceived": "randomDemotivator"}}
-}
+{"_default": {"2": {"userID": 953337533, "photoReceived": "demotivator", "statistics": {"demoCreated": 1, "inlineAnswered": 8}}, "3": {"userID": 1865815, "photoReceived": "randomDemotivator", "statistics": {"demoCreated": 0, "inlineAnswered": 2}}, "4": {"UserID": 436928099, "photoReceived": "nothing", "statistics": {"demoCreated": 0, "inlineAnswered": 0}}, "5": {"UserID": 151605823, "photoReceived": "nothing", "statistics": {"demoCreated": 6, "inlineAnswered": 7}}}}

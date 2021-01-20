@@ -104,8 +104,6 @@ def randomRating(item):
 		[r"*10/10\!*" + '\n' + "_Все Лисы мира сбежались к $$$\. Кажется, лучше этого в глазах лисячьего сообщества нет ничего_", 'datv'],
 	]
 	_choice = choice(ratingList)
-	print(_choice)
-	print(item)
 
 	inflectedItems = []
 	for i in item:
@@ -113,13 +111,9 @@ def randomRating(item):
 			temp = i.inflect({f'{_choice[1]}'})[0]
 		except:
 			temp = i[0]
-		print(temp)
 		inflectedItems.append(temp)
-		print(inflectedItems)
 
-	print(inflectedItems)
 	rating = _choice[0].replace('$$$', ' '.join(inflectedItems))
-	print(rating)
 	return rating
 
 

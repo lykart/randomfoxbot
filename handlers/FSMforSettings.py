@@ -3,9 +3,11 @@ from misc import dp, bot
 from features.dbInteractions import \
 	addUser,                        \
 	updateUserSettings,             \
-	getPhotoReceivedUserSettings    #
+	getPhotoReceivedUserSettings,   \
+	getUserStats                    #
 
 
+from aiogram.utils import exceptions
 from aiogram.types import       \
 	Message, inline_keyboard,   \
 	CallbackQuery               #
@@ -61,13 +63,15 @@ def photoReceivedOptionConversion(option: str) -> str:
 
 
 @dp.message_handler(filters.Text(equals="Настρойки"), state=None)
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)settings|parameters|демо|демотиватор$']), state="*")
-async def settingsCallingHandler(message: Message, isBack: bool = False):
-	if not isBack and addUser(message.from_user.id):
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)settings|parameters|настройки']), state="*")
+async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
+	if not isBack:
+		addUser(message.from_user.id)
 		print(f"User {message.from_user.id} added")
 
 	buttonsData = [
-		["Отправлено фото", "photoReceivedChanging"]
+		["Отправлено фото", "photoReceivedChanging"],
+		["Статистика", "statistics"]
 	]
 
 	buttons = buttonsList(buttonsData, rowWidth=2)
@@ -94,6 +98,44 @@ async def settingsCallingHandler(message: Message, isBack: bool = False):
 			chat_id=message.chat.id,
 			message_id=message.message_id
 		)
+
+
+@dp.callback_query_handler(filters.Text(equals="statistics"))
+async def statisticsCallingCallbackHandler(callback_query: CallbackQuery, isUpdate: bool = False):
+	message = callback_query.message
+
+	buttonsData = [
+		["Обновить", "update"],
+		["←Назад", "back"]
+	]
+
+	buttons = buttonsList(buttonsData, rowWidth=2)
+	reply_markup = inline_keyboard.InlineKeyboardMarkup(row_width=2, inline_keyboard=buttons)
+
+	userStats = getUserStats(userID=callback_query.from_user.id)
+
+	text = markdown.bold("Ваша статистика:\n\n") + \
+	       "Создано демотиваторов — " + markdown.italic(f"{userStats['demoCreated']}\n") + \
+	       "Выполнено inline\-комманд — " + markdown.italic(f"{userStats['inlineAnswered']}\n")
+
+	try:
+		await bot.edit_message_text(
+			text=text,
+			reply_markup=reply_markup,
+			parse_mode='MarkdownV2',
+			chat_id=message.chat.id,
+			message_id=message.message_id
+		)
+
+		if isUpdate:
+			await callback_query.answer(text="Статистика обновлена")
+	except exceptions.MessageNotModified:
+		await callback_query.answer(text="Статистика не поменялась")
+
+
+@dp.callback_query_handler(filters.Text(equals="update"))
+async def updateStatisticsCallbackHandler(callback_query: CallbackQuery):
+	await statisticsCallingCallbackHandler(callback_query, isUpdate=True)
 
 
 @dp.callback_query_handler(filters.Text(equals="photoReceivedChanging"))
@@ -126,28 +168,24 @@ async def photoReceivedCallingCallbackHandler(callback_query: CallbackQuery):
 	)
 
 
+@dp.callback_query_handler(regexp=r"back")
+async def backCallbackHandler(callback_query: CallbackQuery):
+	message = callback_query.message
+	await settingsCallingHandler(message, isBack=True)
+
+
 @dp.callback_query_handler(regexp=r"demotivator|randomDemotivator|QRdecode|nothing|back")
 async def photoReceivedChangingCallbackHandler(callback_query: CallbackQuery):
 	data = callback_query.data
-	message = callback_query.message
 	userID = callback_query.from_user.id
 
 	currentOption = getPhotoReceivedUserSettings(userID)
+
 	if data == currentOption:
 		await bot.answer_callback_query(callback_query.id, text="")
 		return
 
-	if data == "demotivator":
-		updateUserSettings(userID, "demotivator")
-	elif data == "randomDemotivator":
-		updateUserSettings(userID, "randomDemotivator")
-	elif data == "QRdecode":
-		updateUserSettings(userID, "QRdecode")
-	elif data == "nothing":
-		updateUserSettings(userID, "nothing")
-	elif data == "back":
-		await settingsCallingHandler(message, isBack=True)
-		return
+	updateUserSettings(userID, photoReceived=data)
 
 	await photoReceivedCallingCallbackHandler(callback_query)
 	await bot.answer_callback_query(callback_query.id, text="Successful!")

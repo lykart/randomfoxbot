@@ -1,6 +1,5 @@
 from tinydb import Query
-
-
+from typing import Dict
 from misc import db
 
 
@@ -8,10 +7,12 @@ photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivato
 User = Query()
 
 
-def defaultBlueprint(userID, defaultAction="nothing"):
+def defaultBlueprint(userID):
 	return {
-		'userID': userID,
-	    'photoReceived': defaultAction
+		'UserID': userID,
+		'photoReceived': "nothing",
+
+		"statistics": defaultStatsField()
 	}
 
 
@@ -25,22 +26,16 @@ def addUser(userID):
 	return userDocument
 
 
-def updateUserSettings(userID: int, photoReceived: str = None) -> bool:
-	if photoReceived not in photoReceivedPossible:
-		return False
+def updateUserSettings(userID: int, **settings) -> bool:
+#   for key in settings:
+#   	if key == "photoReceived" and settings[key] not in photoReceivedPossible:
+#   		print("Not correct \"photoReceived\" option")
+#   		return False
 
-	updatedSettings = {}
-	if photoReceived:
-		updatedSettings.update({"photoReceived": photoReceived})
-
-	if updatedSettings:
-		db.update(
-			updatedSettings,
-			User.userID == userID
-		)
-	else:
-		print(f"Error in {userID} settings update (не передано аргументов для изменения)")
-		return False
+	db.update(
+		settings,
+		User.userID == userID
+	)
 
 	return True
 
@@ -48,17 +43,43 @@ def updateUserSettings(userID: int, photoReceived: str = None) -> bool:
 def getPhotoReceivedUserSettings(userID: int) -> str:
 	try:
 		userDocument = db.search(User.userID == userID)[0]
-	except:
+	except IndexError:
 		print("Error in searching in DB")
-		return None
+		return ""
 
 	return userDocument.get("photoReceived")
 
 
-### something ###
+#### Statistics interactions ####
 
 
-def statsBlueprint(demoCreated, inlineAnswered):
-	return {'demoCreated': 0, 'inlineAnswered': 0}
+def defaultStatsField(demoCreated: int = 0, inlineAnswered: int = 0) -> Dict:
+	return {
+			"demoCreated": demoCreated,
+			"inlineAnswered": inlineAnswered
+	}
+
+
+def incrementStatistics(field: str, userID: int):
+	addUser(userID=userID)
+	db.update(statsIncrementor(field), User.userID == userID)
+
+
+def statsIncrementor(field: str):
+	def transform(doc):
+		doc["statistics"][field] += 1
+	return transform
+
+
+def getUserStats(userID: int):
+	try:
+		return db.search(User.userID == userID)[0]['statistics']
+	except IndexError:
+		addUser(userID=userID)
+		return db.search(User.userID == userID)[0]['statistics']
+
+
+#### Statistics interactions ####
+
 
 # ^_^

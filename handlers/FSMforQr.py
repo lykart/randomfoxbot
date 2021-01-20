@@ -3,7 +3,7 @@ from misc import dp
 from features.mainFunctions import \
 	decodeQr,   imageCorrection
 
-from .default import getDefaultReplyKeyboard
+from .defaultFunctions import getDefaultReplyKeyboard
 
 from aiogram.utils import markdown
 from aiogram.types import Message

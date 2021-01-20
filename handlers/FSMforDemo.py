@@ -2,6 +2,7 @@ from misc import dp, bot
 
 from features.demotivatorCreator import         \
 	txtPicCreator,      demotivatorCreator      #
+from features.dbInteractions import incrementStatistics
 
 from features.mainFunctions import \
 	fsCreator,          randomPhrase
@@ -9,7 +10,7 @@ from features.mainFunctions import \
 from features.dbInteractions import \
 	getPhotoReceivedUserSettings
 
-from .default import getDefaultReplyKeyboard
+from .defaultFunctions import getDefaultReplyKeyboard
 from .FSMforQr import qrCodeAcceptor
 
 
@@ -226,6 +227,7 @@ async def demoFinisher(message: Message, state: FSMContext):
 	else:
 		with open(demPath, 'rb') as photo:
 			await bot.send_photo(message.chat.id, photo, caption='Демотиватор готов!')
+			incrementStatistics(userID=message.from_user.id, field="demoCreated")
 		remove(demPath)
 
 	remove(data['pic'])
@@ -262,7 +264,6 @@ async def demoCallingHandler(message: Message, state: FSMContext):
 @dp.message_handler(state=sfdFSM.text)
 async def subtitleDemoHandler(message: Message, state: FSMContext):
 	if message.text:
-		print("nott")
 		try:
 			_time, _price, _name = message.text.split('\n')
 			IMGpath = fsCreator(_time, _price, _name)

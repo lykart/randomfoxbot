@@ -9,6 +9,7 @@ from os import environ
 
 bot_token = environ["bot_token"]
 ytApiKey = environ["ytApiKey"]
+adminUserID = environ["adminUserID"]
 
 bot = Bot(token=bot_token)
 storage = MemoryStorage()
