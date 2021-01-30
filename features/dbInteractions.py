@@ -2,6 +2,7 @@ from tinydb import Query
 from typing import Dict
 from misc import db, bot, adminUserID
 
+from asyncio import get_event_loop
 
 photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivator"]
 User = Query()
@@ -21,7 +22,10 @@ def addUser(userID):
 		return False
 	else:
 		userDocument = defaultBlueprint(userID=userID)
-		bot.send_message(adminUserID, f"User {userID} added")
+
+		loop = get_event_loop()
+		loop.create_task(bot.send_message(adminUserID, f"User {userID} added"))
+
 		db.insert(userDocument)
 
 	return userDocument

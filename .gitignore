@@ -130,3 +130,6 @@ dmypy.json
 
 # Test folders
 Test
+
+# DB
+resources/db.json
