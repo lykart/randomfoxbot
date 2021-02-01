@@ -1,6 +1,7 @@
 from misc import dp, bot
 from features.mainFunctions import \
-	createQR, uploadInputFileToTelegram  #
+	createQR, uploadInputFileToTelegram,\
+	escapeMarkdown  #
 
 from aiogram.types import \
 	InlineQuery, inline_keyboard, \
@@ -17,16 +18,12 @@ import re
 
 @dp.inline_handler(regexp=r'(?i)^qr\b.+$')
 async def qrInlineHandler(inline_query: InlineQuery):
-	txt = re.search(r"(?i)qr\b\s+(.+)", inline_query.query).group(1)
-
 	awaitingButton = inline_keyboard.InlineKeyboardButton(
 		'Ожидайте...',
 		callback_data='awaiting'
 	)
 
-	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1). \
-		insert(awaitingButton)
-
+	awaitingKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).insert(awaitingButton)
 	items = [
 		InlineQueryResultPhoto(
 			id=str(time() + 1),
@@ -35,10 +32,7 @@ async def qrInlineHandler(inline_query: InlineQuery):
 			photo_width=200,
 			photo_height=200,
 
-			caption=markdown.italic("QR code с текстом") +
-			        '\n' +
-			        markdown.bold(f"\"{txt}\""),
-
+			caption=markdown.italic("QR—code генерируется..."),
 			reply_markup=awaitingKeyboard,
 			parse_mode='MarkdownV2'
 		)

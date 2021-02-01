@@ -320,3 +320,7 @@ def fsCreator(timeTxt: str, priceTxt: str, nameTxt: str) -> str:
 	fs.save(IMGpath)
 
 	return IMGpath
+
+
+def escapeMarkdown(text: str) -> str:
+	return re.sub(r'([\\.\-!\#\(\)\[\]\{\}\"_\*>\+=\|]){1}', r'\\\g<1>', text)

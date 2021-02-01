@@ -1,7 +1,7 @@
 from misc import dp
 
 from features.mainFunctions import \
-	decodeQr,   imageCorrection
+	decodeQr,   escapeMarkdown
 
 from .defaultFunctions import getDefaultReplyKeyboard
 
@@ -74,10 +74,9 @@ async def qrCodeAcceptor(message: Message, state: FSMContext):
 	remove(data['qr'])
 
 	if qrData:
-		messageToUser = markdown.bold("Содержание QR-кода:") + \
-		                f'\n{qrData}' if isURL(qrData) else markdown.code(f"\n{qrData}")
+		messageToUser = markdown.bold("Содержание QR—кода:\n") + f'{escapeMarkdown(qrData)}'
 	else:
-		messageToUser = markdown.bold("Не удалось считать QR-код.")
+		messageToUser = markdown.bold("Не удалось считать QR—код")
 
 	await message.reply(
 		text=messageToUser,
