@@ -1,12 +1,6 @@
-from json import dumps
-
-
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram import filters
 from aiogram.types import Message
 
-
-from misc import dp, db, adminUserID
 from features.dbInteractions import incrementStatistics
 
 
