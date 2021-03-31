@@ -1,13 +1,15 @@
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import Message
+from aiogram import filters
 
-from features.dbInteractions import incrementStatistics
+from misc import dp, adminUserID
+from features.dbInteractions import incrementStatistics, getWholeDb
 
 
-# @dp.message_handler(filters.Text(equals="Статистика"), filters.IDFilter(user_id=adminUserID))
-# async def getStatsHandler(message: Message):
-#     database = dumps(db.all()).replace("{", "\n").replace("}", "\n").replace(",", "\n").replace("\n\n\n", "\n\n")
-#     await message.answer(text=database, parse_mode='MarkdownV2')
+@dp.message_handler(filters.Text(equals="Статистика"), filters.IDFilter(user_id=adminUserID))
+async def getStatsHandler(message: Message):
+    stats = getWholeDb()
+    await message.answer(text=stats)
 
 
 class CounterMiddleware(BaseMiddleware):

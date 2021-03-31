@@ -49,6 +49,37 @@ usersSet = UsersSet()
 # TODO: синхронизация базы данных каждые 10 минут по статистике
 
 
+def getWholeDb() -> str:
+	with conn.cursor() as cursor:
+		cursor.execute(f"SELECT * FROM \"user\";")
+		users = cursor.fetchall()
+
+		cursor.execute(f"SELECT * FROM \"stats\";")
+		stats = cursor.fetchall()
+
+		cursor.execute(f"SELECT * FROM \"settings\";")
+		settings = cursor.fetchall()
+
+	users = { user[0]: user[1:] for user in users }
+	stats = { stat[0]: stat[1:] for stat in stats }
+	settings = { setting[0]: setting[1:] for setting in settings }
+
+	userStats = [
+		f"\n\nUser -- {user}:\n\t"
+		f"> demoCreated = {stats.get(user)[0]}, inlineAnswered = {stats.get(user)[1]}\n\t"
+		f"> photoReceived = {settings.get(user)[0]}"
+
+		for user in users
+	]
+
+	answer = ""
+
+	for user in userStats:
+		answer += user
+
+	return answer
+
+
 @autoCommit
 def addUser(userID) -> bool:
 	if usersSet.inUsers(userID):
