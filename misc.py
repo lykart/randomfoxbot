@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from os import environ
+from psycopg2 import connect
 
 
 bot_token = environ["bot_token"]
