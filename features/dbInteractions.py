@@ -1,87 +1,125 @@
-from tinydb import Query
-from typing import Dict
-from misc import db, bot, adminUserID
+from misc import bot, adminUserID, connection as conn
 
 from asyncio import get_event_loop
+from datetime import date as Date
+
+import functools
+
+
+def autoCommit(func):
+	@functools.wraps(func)
+	def wrapper(*args, **kwargs):
+		foo = func(*args, **kwargs)
+		conn.commit()
+
+		return foo
+	return wrapper
+
 
 photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivator"]
-User = Query()
 
 
-def defaultBlueprint(userID):
-	return {
-		'userID': userID,
-		'photoReceived': "nothing",
+class UsersSet:
 
-		"statistics": defaultStatsField()
-	}
+	def get(self):
+		with conn.cursor() as cursor:
+			cursor.execute("SELECT \"userID\" FROM \"user\";")
+			return {i[0] for i in cursor}
+
+	def inUsers(self, userID: int) -> bool:
+		if userID in self.users:
+			return True
+		else:
+			return False
+
+	def update(self):
+		self.users = self.get()
+
+	def __init__(self):
+		self.users = self.get()
 
 
-def addUser(userID):
-	if db.contains(User.userID == userID):
+usersSet = UsersSet()
+
+
+# async def dbStatsSync():
+# 	with conn.cursor() as cursor:
+# 		while True:
+# 			await sleep(600)
+# TODO: синхронизация базы данных каждые 10 минут по статистике
+
+
+@autoCommit
+def addUser(userID) -> bool:
+	if usersSet.inUsers(userID):
 		return False
-	else:
-		userDocument = defaultBlueprint(userID=userID)
 
-		loop = get_event_loop()
-		loop.create_task(bot.send_message(adminUserID, f"User {userID} added"))
+	with conn.cursor() as cursor:
+		cursor.execute(
+			"INSERT INTO \"user\" (\"userID\", \"signUpDate\") VALUES (%(userID)s, %(date)s);"
+			"INSERT INTO \"stats\" (\"userID\") VALUES (%(userID)s);"
+			"INSERT INTO \"settings\" (\"userID\") VALUES (%(userID)s);",
 
-		db.insert(userDocument)
+			{'userID': userID, 'date': Date.today()}
+		)
 
-	return userDocument
+	loop = get_event_loop()
+	loop.create_task(bot.send_message(adminUserID, f"User {userID} added"))
 
-
-def updateUserSettings(userID: int, **settings) -> bool:
-#   for key in settings:
-#   	if key == "photoReceived" and settings[key] not in photoReceivedPossible:
-#   		print("Not correct \"photoReceived\" option")
-#   		return False
-
-	db.update(
-		settings,
-		User.userID == userID
-	)
-
+	usersSet.update()
 	return True
 
 
-def getPhotoReceivedUserSettings(userID: int) -> str:
-	try:
-		userDocument = db.search(User.userID == userID)[0]
-	except IndexError:
-		print("Error in searching in DB")
-		return ""
+@autoCommit
+def updateUserSettings(userID: int, **settings):
+	item, option = list(settings.items())[0]
 
-	return userDocument.get("photoReceived")
+	with conn.cursor() as cursor:
+		cursor.execute(
+			f"UPDATE \"settings\" SET \"{item}\" = %s WHERE \"userID\" = %s",
+			(option, userID)
+		)
+
+
+def getPhotoReceivedUserSettings(userID: int) -> str:
+	with conn.cursor() as cursor:
+		cursor.execute(
+			"SELECT * FROM \"settings\" WHERE \"userID\" = %s;",
+			(userID,)
+		)
+		result = [i for i in cursor][0] # tuple из всех настроек, где tuple[0] - userID, tuple[1] - photoReceived итд (как в бд)
+
+	photoReceived = result[1]
+
+	return photoReceived
 
 
 #### Statistics interactions ####
 
 
-def defaultStatsField(demoCreated: int = 0, inlineAnswered: int = 0) -> Dict:
-	return {
-			"demoCreated": demoCreated,
-			"inlineAnswered": inlineAnswered
-	}
-
-
+@autoCommit
 def incrementStatistics(field: str, userID: int):
-	addUser(userID=userID)
-	db.update(statsIncrementor(field), User.userID == userID)
+	addUser(userID)
 
-
-def statsIncrementor(field: str):
-	def transform(doc):
-		doc["statistics"][field] += 1
-	return transform
+	with conn.cursor() as cursor:
+		cursor.execute(
+			f"UPDATE \"stats\" SET \"{field}\" = \"{field}\" + 1 WHERE \"userID\" = %s",
+			(userID,)
+		)
 
 
 def getUserStats(userID: int):
-	try:
-		return db.search(User.userID == userID)[0]['statistics']
-	except IndexError:
-		addUser(userID=userID)
-		return db.search(User.userID == userID)[0]['statistics']
+	with conn.cursor() as cursor:
+		cursor.execute(
+			f"SELECT * FROM \"stats\" WHERE \"userID\" = %s;",
+			(userID, )
+		)
+		result = [i for i in cursor][0]
+
+	possibleStats = ["demoCreated", "inlineAnswered"]
+	stats = {possibleStats[i]: result[i + 1] for i in range(len(possibleStats))}
+
+	return stats
 
 
 #### Statistics interactions ####

@@ -190,6 +190,41 @@ async def helpInlineHandler(inline_query: InlineQuery):
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=999999)
 
 
+@dp.inline_handler(regexp=r'(?i)^\s*translate\s+.+')
+async def translatorInlineQueryHandler(inline_query: InlineQuery):
+	text = inline_query.query.strip()[10:].strip()
+
+	eng = "`qwertyuiop[]asdfghjkl;'zxcvbnm,./~@#$^&QWERTYUIOP{}ASDFGHJKL:\"|ZXCVBNM<>?"
+	rus = "ёйцукенгшщзхъфывапролджэячсмитьбю.Ё\"№;:?ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭ/ЯЧСМИТЬБЮ,"
+
+	rusLetters = "оеаинтсрвлкмдпуяыьгзбчйхжшюцщэфъё"
+
+	messageLanguage = eng
+	languageToTranslate = rus
+
+	for _ in rusLetters:
+		if _ in text.lower():
+			messageLanguage = rus
+			languageToTranslate = eng
+			break
+
+	translatedText = text.translate(
+		text.maketrans(messageLanguage, languageToTranslate)
+	)
+
+	items = [
+		InlineQueryResultArticle(
+			id=str(time()),
+			title='Переведённый текст:',
+			description=translatedText,
+			thumb_url='https://i.ibb.co/S6mcw2F/1200px-Wikipedia-logo-svg-svg.png',
+			input_message_content=InputTextMessageContent(translatedText)
+		)
+	]
+
+	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+
+
 # Обработчик запроса "Who am I?" Inline Query
 @dp.inline_handler(regexp=r'(?i)who\s*am\s*i')
 async def whoIAmInlineHandler(inline_query: InlineQuery):
@@ -399,3 +434,4 @@ async def wikiInlineQueryHandler(inline_query: InlineQuery):
 	]
 
 	await bot.answer_inline_query(inline_query.id, results=items, cache_time=0)
+

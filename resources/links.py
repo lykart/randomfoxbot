@@ -1,10 +1,9 @@
 from os.path import dirname, join
 
+
 foxLogoPreview = 'https://i.ibb.co/0tzywHx/Unt22itled-1.png'
 
 pathToResources = dirname(__file__)
-
-pathToDB = join(pathToResources, "db.json")
 
 pathToFont = join(pathToResources, "times.ttf")
 pathToFoxLogo = join(pathToResources, "foxLogo.png")

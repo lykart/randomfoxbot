@@ -10,10 +10,10 @@ from misc import dp, db, adminUserID
 from features.dbInteractions import incrementStatistics
 
 
-@dp.message_handler(filters.Text(equals="Статистика"), filters.IDFilter(user_id=adminUserID))
-async def getStatsHandler(message: Message):
-    database = dumps(db.all()).replace("{", "\n").replace("}", "\n").replace(",", "\n").replace("\n\n\n", "\n\n")
-    await message.answer(text=database, parse_mode='MarkdownV2')
+# @dp.message_handler(filters.Text(equals="Статистика"), filters.IDFilter(user_id=adminUserID))
+# async def getStatsHandler(message: Message):
+#     database = dumps(db.all()).replace("{", "\n").replace("}", "\n").replace(",", "\n").replace("\n\n\n", "\n\n")
+#     await message.answer(text=database, parse_mode='MarkdownV2')
 
 
 class CounterMiddleware(BaseMiddleware):
