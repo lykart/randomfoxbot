@@ -65,8 +65,7 @@ def photoReceivedOptionConversion(option: str) -> str:
 @dp.message_handler(filters.Text(equals="Настρойки"), state=None)
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)settings|parameters|настройки']), state="*")
 async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
-	if not isBack:
-		addUser(message.from_user.id)
+	addUser(message.from_user.id)
 
 	buttonsData = [
 		["Отправлено фото", "photoReceivedChanging"],
@@ -76,13 +75,15 @@ async def settingsCallingHandler(message: Message, isBack: bool = False, userID:
 	buttons = buttonsList(buttonsData, rowWidth=2)
 	reply_markup = inline_keyboard.InlineKeyboardMarkup(row_width=1, inline_keyboard=buttons)
 
-	userID = message.from_user.id
+	if not userID:
+		userID = message.chat.id
+
 	username = ", "
 
 	if userID == 1865815:
 		username += "кууууун"
 	elif userID == 953337533:
-		username += "Юрочка"
+		username += "жура)0"
 	else:
 		username = ""
 
