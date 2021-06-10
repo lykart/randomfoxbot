@@ -211,7 +211,7 @@ def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
 	hTxt, headerFontSize = temp[0], temp[1]
 
 	headerFont = ImageFont.truetype(pathToFont, headerFontSize)
-	txtSize = txtDrawer.multiline_textsize(hTxt, font=headerFont, encoding='unic')
+	txtSize = txtDrawer.multiline_textsize(hTxt, font=headerFont)
 	headerWidth, headerHeight = txtSize[0], txtSize[1]
 
 	headerBox = intBox((backWidth / 2) - (headerWidth / 2), txtPadding / 3)

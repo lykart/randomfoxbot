@@ -16,8 +16,8 @@ from aiogram.dispatcher import      \
 from aiogram.utils import markdown
 
 
-# Функция, возвращающая текст, форматированный как СИСТЕМНОЕ СООБЩЕНИЕ
 async def systemAnswer(message: Message, text: str = "Ошибка", markup=None):
+	"""Возвращающая текст, форматированный как СИСТЕМНОЕ СООБЩЕНИЕ (кастомный тип форматирования в этом проекте)"""
 	if markup:
 		await message.answer(
 			markdown.code(text),
@@ -41,7 +41,7 @@ def buttonsList(*args, rowWidth: int = 2):
 	lastRowWidth = length % rowWidth
 
 	formattedButtons = [buttons[i:i + rowWidth] for i in range(0, length - lastRowWidth, rowWidth)]
-	formattedButtons.append(buttons[length - lastRowWidth : length])
+	formattedButtons.append(buttons[length - lastRowWidth: length])
 
 	return formattedButtons
 
@@ -59,13 +59,17 @@ def photoReceivedOptionConversion(option: str) -> str:
 	return translated[0]
 
 
-############# HANDLERS ############################
+# ----------- HANDLERS -------------------------------------------------------------------------------------------------
 
 
 @dp.message_handler(filters.Text(equals="Настρойки"), state=None)
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)settings|parameters|настройки']), state="*")
 async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
-	addUser(message.from_user.id)
+	"""Основное меню настроек"""
+	if not isBack:
+		addUser(message.from_user.id)
+	if not userID:
+		userID = message.chat.id
 
 	buttonsData = [
 		["Отправлено фото", "photoReceivedChanging"],
@@ -75,23 +79,20 @@ async def settingsCallingHandler(message: Message, isBack: bool = False, userID:
 	buttons = buttonsList(buttonsData, rowWidth=2)
 	reply_markup = inline_keyboard.InlineKeyboardMarkup(row_width=1, inline_keyboard=buttons)
 
-	if not userID:
-		userID = message.chat.id
-
-	username = ", "
-
+	username = ''
 	if userID == 1865815:
-		username += "кууууун"
+		username = "карович"
 	elif userID == 953337533:
-		username += "жура)0"
-	else:
-		username = ""
+		username = "жура)0"
 
-	text = "Что вы хотите изменить" + username + "?"
+	text = \
+		"Что вы хотите изменить" + \
+		(', ' + username if username else '') + \
+		"?"
 
-	if not isBack:
+	if not isBack:		# Создаёт сообщение, если пользователь вызвал настройки
 		await message.answer(text=text, reply_markup=reply_markup)
-	else:
+	else:				# Изменяет сообщение, если пользователь нажал "back"
 		await bot.edit_message_text(
 			text=text,
 			reply_markup=reply_markup,
@@ -171,7 +172,8 @@ async def photoReceivedCallingCallbackHandler(callback_query: CallbackQuery):
 @dp.callback_query_handler(regexp=r"back")
 async def backCallbackHandler(callback_query: CallbackQuery):
 	message = callback_query.message
-	await settingsCallingHandler(message, isBack=True)
+	user_id = callback_query.from_user.id
+	await settingsCallingHandler(message, isBack=True, userID=user_id)
 
 
 @dp.callback_query_handler(regexp=r"demotivator|randomDemotivator|QRdecode|nothing|back")
