@@ -139,16 +139,18 @@ async def statisticsCallingCallbackHandler(callback_query: CallbackQuery, isUpda
 
 @dp.callback_query_handler(filters.Text(equals="update"))
 async def updateStatisticsCallbackHandler(callback_query: CallbackQuery):
+	"""функция для обновления значения существующего сообщения"""
 	await statisticsCallingCallbackHandler(callback_query, isUpdate=True)
 
 
 @dp.callback_query_handler(filters.Text(equals="changeNickname"))
 async def NicknameChangingCallbackHandler(callback_query: CallbackQuery = None, state: FSMContext = None,
 										  isUpdate: bool = False):
+	"""Handler состояния для изменения никнейма"""
 	if callback_query:
 		await SettingsFSM.changingNickname.set()
 		async with state.proxy() as data:
-			data['callback_query'] = callback_query
+			data['callback_query'] = callback_query		# сохранение колбэка, так как следующим ивентом будет сообщение
 
 	async with state.proxy() as data:
 		callback_query = data['callback_query']
@@ -183,14 +185,15 @@ async def NicknameChangingCallbackHandler(callback_query: CallbackQuery = None, 
 
 
 @dp.callback_query_handler(filters.Text(equals="updateNickname"), state="*")
-async def updateNicknameCallbackHandler(callback_query: CallbackQuery, state: FSMContext):
+async def updateNicknameCallbackHandler(callback_query: CallbackQuery, state: FSMContext) -> None:
+	"""функция для обновления значения существующего сообщения"""
 	await SettingsFSM.changingNickname.set()
 	await NicknameChangingCallbackHandler(callback_query=callback_query, isUpdate=True, state=state)
 
 
 @dp.message_handler(state=SettingsFSM.changingNickname)
-async def updateNickname(message: Message, state: FSMContext):
-	if len(message.text) <= 20:
+async def updateNickname(message: Message, state: FSMContext) -> None:
+	if len(message.text) <= 20:		# ограничение БД
 		userID = message.from_user.id
 		new_nickname = message.text
 
@@ -200,10 +203,20 @@ async def updateNickname(message: Message, state: FSMContext):
 			markdown.bold(f'{new_nickname}') + '.',
 			parse_mode='markdown')
 
+		###  ПАСХАЛ(ОЧКА)  ###
+
+		if message.text.lower() == 'попа':
+			await message.answer("Ого! Ты знаешь об этой секретной функции? Тогда тебе от меня тоже сюрприз!")
+			await message.answer('https://t.me/addstickers/rnfoxbot')
+
+		###  ПАСХАЛ(ОЧКА)  ###
+
+		# получение callback_query для изменения сообщения-настроек
 		async with state.proxy() as data:
 			callback_query = data['callback_query']
 			message = callback_query.message
 
+		await state.finish()
 		await settingsCallingHandler(message, isBack=True, userID=userID)
 	else:
 		await message.answer("Можно покороче?")
