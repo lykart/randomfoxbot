@@ -43,8 +43,7 @@ async def qrInlineHandler(inline_query: InlineQuery):
 
 @dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r"(?i)^qr\b.+$", chosen_inline_query.query))
 async def some_chosen_inline_handler(chosen_inline_query: ChosenInlineResult):
-	queryTxt = chosen_inline_query.query
-	txt = re.search(r"(?i)qr\b\s+(.+)", queryTxt).group(1)
+	txt = chosen_inline_query.query[3:]		# Обрезаем "qr"
 
 	voidInlineKeyboard = inline_keyboard.InlineKeyboardMarkup()
 

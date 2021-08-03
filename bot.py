@@ -1,11 +1,16 @@
-from aiogram import executor
-
-
+from asyncio import run
 from misc import dp
-from handlers.defaultHandlers import CounterMiddleware
+from handlers.defaultHandlers import CounterMiddleware, set_default_commands
 import handlers
 
 
-if __name__ == "__main__":
+async def main():
     dp.middleware.setup(CounterMiddleware())
-    executor.start_polling(dp, skip_updates=True)
+
+    commands = await set_default_commands()
+    await dp.bot.set_my_commands(commands=commands)
+
+    await dp.start_polling(dp)
+
+if __name__ == '__main__':
+    run(main())

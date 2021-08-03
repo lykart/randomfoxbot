@@ -1,19 +1,28 @@
-from misc import dp, bot
+from misc import dp, bot, connection as conn
 
 from features.dbInteractions import \
 	addUser,                        \
 	updateUserSettings,             \
 	getPhotoReceivedUserSettings,   \
-	getUserStats                    #
-
+	getUserStats, change_nickname,  \
+	get_nick_by_id                  #
 
 from aiogram.utils import exceptions
 from aiogram.types import       \
 	Message, inline_keyboard,   \
 	CallbackQuery               #
 from aiogram.dispatcher import      \
-	filters                         #
+	filters, FSMContext             #
 from aiogram.utils import markdown
+from aiogram.dispatcher.filters.state import    \
+	State,                                      \
+	StatesGroup                                 #
+
+from typing import Optional
+
+
+class SettingsFSM(StatesGroup):
+	changingNickname = State()
 
 
 async def systemAnswer(message: Message, text: str = "Ошибка", markup=None):
@@ -63,7 +72,7 @@ def photoReceivedOptionConversion(option: str) -> str:
 
 
 @dp.message_handler(filters.Text(equals="Настρойки"), state=None)
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)settings|parameters|настройки']), state="*")
+@dp.message_handler(commands=["settings"])
 async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
 	"""Основное меню настроек"""
 	if not isBack:
@@ -73,22 +82,16 @@ async def settingsCallingHandler(message: Message, isBack: bool = False, userID:
 
 	buttonsData = [
 		["Отправлено фото", "photoReceivedChanging"],
-		["Статистика", "statistics"]
+		["Статистика", "statistics"],
+		["Изменить ник", "changeNickname"],
 	]
 
 	buttons = buttonsList(buttonsData, rowWidth=2)
 	reply_markup = inline_keyboard.InlineKeyboardMarkup(row_width=1, inline_keyboard=buttons)
 
-	username = ''
-	if userID == 1865815:
-		username = "карович"
-	elif userID == 953337533:
-		username = "жура)0"
+	username = get_nick_by_id(userID)
 
-	text = \
-		"Что вы хотите изменить" + \
-		(', ' + username if username else '') + \
-		"?"
+	text = f"Что вы хотите изменить, {username}?"
 
 	if not isBack:		# Создаёт сообщение, если пользователь вызвал настройки
 		await message.answer(text=text, reply_markup=reply_markup)
@@ -139,6 +142,73 @@ async def updateStatisticsCallbackHandler(callback_query: CallbackQuery):
 	await statisticsCallingCallbackHandler(callback_query, isUpdate=True)
 
 
+@dp.callback_query_handler(filters.Text(equals="changeNickname"))
+async def NicknameChangingCallbackHandler(callback_query: CallbackQuery = None, state: FSMContext = None,
+										  isUpdate: bool = False):
+	if callback_query:
+		await SettingsFSM.changingNickname.set()
+		async with state.proxy() as data:
+			data['callback_query'] = callback_query
+
+	async with state.proxy() as data:
+		callback_query = data['callback_query']
+		message = callback_query.message
+
+	buttonsData = [
+		["Обновить", "updateNickname"],
+		["←Назад", "back"]
+	]
+
+	buttons = buttonsList(buttonsData, rowWidth=2)
+	reply_markup = inline_keyboard.InlineKeyboardMarkup(row_width=2, inline_keyboard=buttons)
+
+	nickname = get_nick_by_id(callback_query.from_user.id)
+
+	text = "Здравствуйте, " + markdown.bold(f"{nickname}!\n\n") + \
+	       markdown.italic("Хотите изменить никнейм?\nОтправьте его мне (до 20-ти символов)")
+
+	try:
+		await bot.edit_message_text(
+			text=text,
+			reply_markup=reply_markup,
+			parse_mode='MarkdownV2',
+			chat_id=message.chat.id,
+			message_id=message.message_id
+		)
+
+		if isUpdate:
+			await callback_query.answer(text="Никнейм успешно обновлён.")
+	except exceptions.MessageNotModified:
+		await callback_query.answer(text="Не обманывай лисёнка 🥺")
+
+
+@dp.callback_query_handler(filters.Text(equals="updateNickname"), state="*")
+async def updateNicknameCallbackHandler(callback_query: CallbackQuery, state: FSMContext):
+	await SettingsFSM.changingNickname.set()
+	await NicknameChangingCallbackHandler(callback_query=callback_query, isUpdate=True, state=state)
+
+
+@dp.message_handler(state=SettingsFSM.changingNickname)
+async def updateNickname(message: Message, state: FSMContext):
+	if len(message.text) <= 20:
+		userID = message.from_user.id
+		new_nickname = message.text
+
+		change_nickname(userID, new_nickname)
+		await message.answer(
+			markdown.italic('Никнейм изменён на ') +
+			markdown.bold(f'{new_nickname}') + '.',
+			parse_mode='markdown')
+
+		async with state.proxy() as data:
+			callback_query = data['callback_query']
+			message = callback_query.message
+
+		await settingsCallingHandler(message, isBack=True, userID=userID)
+	else:
+		await message.answer("Можно покороче?")
+
+
 @dp.callback_query_handler(filters.Text(equals="photoReceivedChanging"))
 async def photoReceivedCallingCallbackHandler(callback_query: CallbackQuery):
 	message = callback_query.message
@@ -169,10 +239,13 @@ async def photoReceivedCallingCallbackHandler(callback_query: CallbackQuery):
 	)
 
 
-@dp.callback_query_handler(regexp=r"back")
-async def backCallbackHandler(callback_query: CallbackQuery):
+@dp.callback_query_handler(regexp=r"back", state='*')
+async def backCallbackHandler(callback_query: CallbackQuery, state: FSMContext):
+	await state.finish()
+
 	message = callback_query.message
 	user_id = callback_query.from_user.id
+
 	await settingsCallingHandler(message, isBack=True, userID=user_id)
 
 

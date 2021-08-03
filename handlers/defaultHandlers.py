@@ -1,8 +1,9 @@
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import Message, BotCommand
+
 from aiogram import filters
 
-from misc import dp, adminUserID
+from misc import dp, adminUserID, bot
 from features.dbInteractions import incrementStatistics, getWholeDb
 
 
@@ -18,6 +19,34 @@ class CounterMiddleware(BaseMiddleware):
 
     async def on_pre_process_chosen_inline_result(self, message: Message, data: dict):
         incrementStatistics(userID=message.from_user.id, field="inlineAnswered")
+
+
+async def set_default_commands():
+    commands = [
+        {
+            'command': 'demotivator',
+            'description': '🌄 Создание демотиватора',
+        }, {
+            'command': 'qr',
+            'description': '📊 Генерация QR-кода',
+        }, {
+            'command': 'settings',
+            'description': '🔧 Настройки',
+        }, {
+            'command': 'get_keyboard',
+            'description': '🟩 Вкл. клавиатуру ответов',
+        }, {
+            'command': 'rm_keyboard',
+            'description': '🟥 Выкл. клавиатуру ответов',
+        },
+    ]
+
+    commands = [
+        BotCommand(command['command'], command['description'])
+        for command in commands
+    ]
+
+    return commands
 
 
 # ^-^

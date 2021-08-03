@@ -3,6 +3,8 @@ from misc import bot, adminUserID, connection as conn
 from asyncio import get_event_loop
 from datetime import date as Date
 
+from typing import List, Dict
+
 import functools
 
 
@@ -20,11 +22,10 @@ photoReceivedPossible = ["nothing", "demotivator", "QRdecode", "randomDemotivato
 
 
 class UsersSet:
-
-	def get(self):
+	def get(self) -> List[Dict[str, str]]:
 		with conn.cursor() as cursor:
-			cursor.execute("SELECT \"userID\" FROM \"user\";")
-			return {i[0] for i in cursor}
+			cursor.execute("SELECT \"userID\", \"nickname\" FROM \"user\";")
+			return [{'id': i[0], 'nickname': i[1]} for i in cursor]
 
 	def inUsers(self, userID: int) -> bool:
 		if userID in self.users:
@@ -33,10 +34,11 @@ class UsersSet:
 			return False
 
 	def update(self):
-		self.users = self.get()
+		self.__init__()
 
 	def __init__(self):
-		self.users = self.get()
+		self.nicknames = self.get()
+		self.users = {entry['id'] for entry in self.nicknames}
 
 
 usersSet = UsersSet()
@@ -151,6 +153,25 @@ def getUserStats(userID: int):
 	stats = {possibleStats[i]: result[i + 1] for i in range(len(possibleStats))}
 
 	return stats
+
+
+def get_nick_by_id(user_id: int) -> str:
+	nickname, = [entry['nickname'] for entry in usersSet.nicknames if entry['id'] == user_id]
+	return nickname
+
+
+@autoCommit
+def change_nickname(user_id: int, new_nickname: str):
+	with conn.cursor() as cursor:
+		cursor.execute(
+			f"UPDATE \"user\" SET \"nickname\" = %s WHERE \"userID\" = %s",
+			(new_nickname, user_id)
+		)
+
+	for i, entry in enumerate(usersSet.nicknames):
+		if entry['id'] == user_id:
+			usersSet.nicknames[i]['nickname'] = new_nickname
+			break
 
 
 #### Statistics interactions ####

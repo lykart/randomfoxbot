@@ -31,7 +31,7 @@ class QrFSM(StatesGroup):
 
 
 # Хэндлер отмены
-@dp.message_handler(state=QrFSM, regexp=r'(?i)/отмена|/cancel|ʘтмена')
+@dp.message_handler(state='*', regexp=r'(?i)/отмена|/cancel|ʘтмена')
 async def cancelQrHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is None:
@@ -49,7 +49,7 @@ async def cancelQrHandler(message: Message, state: FSMContext):
 
 
 @dp.message_handler(filters.Text(equals="Распознать QR"), state="*")
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=[r'(?i)qr|qrcode']), state="*")
+@dp.message_handler(commands=["qr"])
 async def qrCallingHandler(message: Message, state: FSMContext):
 	current_state = await state.get_state()
 	if current_state is not None:
@@ -74,17 +74,21 @@ async def qrCodeAcceptor(message: Message, state: FSMContext):
 	remove(data['qr'])
 
 	if qrData:
-		messageToUser = markdown.bold("Содержание QR—кода:\n") + f'{escapeMarkdown(qrData)}'
+		messageToUser = "Содержание QR—кода:\n" + f'{qrData}'
 	else:
 		messageToUser = markdown.bold("Не удалось считать QR—код")
 
 	await message.reply(
 		text=messageToUser,
 		disable_web_page_preview=False,
-		parse_mode='MarkdownV2'
 	)
 
 	await state.finish()
+
+
+if __name__ == '__main__':
+	txt = decodeQr('C:\\Users\\User\\PycharmProjects\\untitled\\handlers\\img.png')
+	pass
 
 
 # ^-^

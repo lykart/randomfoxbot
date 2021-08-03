@@ -1,4 +1,6 @@
-from aiogram.types import ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, Message, ReplyKeyboardRemove
+
+from misc import dp
 
 
 # Стандартная reply-keyboard:
@@ -12,6 +14,16 @@ def getDefaultReplyKeyboard():
 	markup.insert("ʘтмена")
 
 	return markup
+
+
+@dp.message_handler(commands=["get_keyboard"])
+async def set_default_keyboard(message: Message):
+	await message.answer("Готово!", reply_markup=getDefaultReplyKeyboard())
+
+
+@dp.message_handler(commands=["rm_keyboard"])
+async def remove_default_keyboard(message: Message):
+	await message.answer("Готово!", reply_markup=ReplyKeyboardRemove())
 
 
 # ^-^

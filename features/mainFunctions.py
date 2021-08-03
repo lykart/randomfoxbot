@@ -246,7 +246,6 @@ def decodeQr(picPath):
 	data = [decoded.data.decode('utf-8') for decoded in data]
 	data = ',\n'.join(data)
 
-
 	return data
 
 
