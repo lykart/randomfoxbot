@@ -62,23 +62,19 @@ def getWholeDb() -> str:
 		cursor.execute(f"SELECT * FROM \"settings\";")
 		settings = cursor.fetchall()
 
-	users = { user[0]: user[1:] for user in users }
-	stats = { stat[0]: stat[1:] for stat in stats }
-	settings = { setting[0]: setting[1:] for setting in settings }
+	users = {user[0]: user[1:] for user in users}
+	stats = {stat[0]: stat[1:] for stat in stats}
+	settings = {setting[0]: setting[1:] for setting in settings}
 
 	userStats = [
-		f"\n\nUser -- {user}:\n\t"
-		f"> demoCreated = {stats.get(user)[0]}, inlineAnswered = {stats.get(user)[1]}\n\t"
-		f"> photoReceived = {settings.get(user)[0]}"
+		f"\n\nUser -- {userID} ({users.get(userID)[1]}):\n"
+		f"> demoCreated = {stats.get(userID)[0]}, inlineAnswered = {stats.get(userID)[1]}\n"
+		f"> photoReceived = {settings.get(userID)[0]}"
 
-		for user in users
+		for userID in users
 	]
 
-	answer = ""
-
-	for user in userStats:
-		answer += user
-
+	answer = "".join(userStats)
 	return answer
 
 

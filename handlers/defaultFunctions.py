@@ -1,6 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, Message, ReplyKeyboardRemove
-
-from misc import dp
+from aiogram.types import ReplyKeyboardMarkup, BotCommand
 
 
 # Стандартная reply-keyboard:
@@ -16,14 +14,32 @@ def getDefaultReplyKeyboard():
 	return markup
 
 
-@dp.message_handler(commands=["get_keyboard"])
-async def set_default_keyboard(message: Message):
-	await message.answer("Готово!", reply_markup=getDefaultReplyKeyboard())
+async def get_default_commands():
+	commands = [
+        {
+            'command': 'demotivator',
+            'description': '🌄 Создание демотиватора',
+        }, {
+            'command': 'qr',
+            'description': '📊 Разпознать QR-код',
+        }, {
+            'command': 'settings',
+            'description': '🔧 Настройки',
+        }, {
+            'command': 'get_keyboard',
+            'description': '🟩 Вкл. клавиатуру ответов',
+        }, {
+            'command': 'rm_keyboard',
+            'description': '🟥 Выкл. клавиатуру ответов',
+        },
+    ]
 
+	commands = [
+        BotCommand(command['command'], command['description'])
+        for command in commands
+    ]
 
-@dp.message_handler(commands=["rm_keyboard"])
-async def remove_default_keyboard(message: Message):
-	await message.answer("Готово!", reply_markup=ReplyKeyboardRemove())
+	return commands
 
 
 # ^-^

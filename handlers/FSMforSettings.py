@@ -1,4 +1,6 @@
-from misc import dp, bot, connection as conn
+import aiogram.utils.exceptions
+
+from misc import dp, bot
 
 from features.dbInteractions import \
 	addUser,                        \
@@ -17,8 +19,6 @@ from aiogram.utils import markdown
 from aiogram.dispatcher.filters.state import    \
 	State,                                      \
 	StatesGroup                                 #
-
-from typing import Optional
 
 
 class SettingsFSM(StatesGroup):
@@ -71,6 +71,14 @@ def photoReceivedOptionConversion(option: str) -> str:
 # ----------- HANDLERS -------------------------------------------------------------------------------------------------
 
 
+@dp.callback_query_handler(filters.Text(equals="close"))
+async def closeSettingsMessageCallbackHandler(callback_query: CallbackQuery):
+	try:
+		await dp.bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
+	except aiogram.utils.exceptions.MessageCantBeDeleted:
+		await callback_query.answer('Это сообщение уже нельзя удалить')
+
+
 @dp.message_handler(filters.Text(equals="Настρойки"), state=None)
 @dp.message_handler(commands=["settings"])
 async def settingsCallingHandler(message: Message, isBack: bool = False, userID: int = None):
@@ -84,6 +92,7 @@ async def settingsCallingHandler(message: Message, isBack: bool = False, userID:
 		["Отправлено фото", "photoReceivedChanging"],
 		["Статистика", "statistics"],
 		["Изменить ник", "changeNickname"],
+		["Закрыть", "close"],
 	]
 
 	buttons = buttonsList(buttonsData, rowWidth=2)
