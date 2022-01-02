@@ -217,8 +217,8 @@ def txtPicCreator(hTxt: str, picWidth: int=None, subTxt: str=None,
 	headerBox = intBox((backWidth / 2) - (headerWidth / 2), txtPadding / 3)
 
 	if subTxt:
-		subTxtPadding = headerHeight * 0.15
-		subFontSize = int(headerFontSize * 0.6)
+		subTxtPadding = headerHeight * 0.18
+		subFontSize = int(headerFontSize * 0.5)
 
 		try:
 			temp = textException(txtDrawer, subTxt, txtFieldWidth, subFontSize,
