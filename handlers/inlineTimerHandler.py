@@ -97,8 +97,10 @@ async def some_callback_handler(inline_query: InlineQuery):
 
 @dp.chosen_inline_handler(lambda chosen_inline_query: re.search(r'(?i)timer\s+\(.+\)\s+(\d+[smh]){1,3}', chosen_inline_query.query))
 async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
+
 	secCount = evalSecondsCount(chosen_inline_query.query)
 	queryText = chosen_inline_query.query
+
 	try:
 		text = queryText[queryText.find("(") + 1:queryText.find(")")]
 	except:
@@ -141,9 +143,13 @@ async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
 		)
 
 		inlineKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).insert(doneButton)
+
 		await bot.edit_message_text(text=f"Время истекло!",	inline_message_id=inlineMessageId)
 		await bot.edit_message_reply_markup(reply_markup=inlineKeyboard,	inline_message_id=inlineMessageId)
-		await bot.send_message(chosen_inline_query.from_user.id, text=f"({text}) был завершен.\nЗакончен в {currTime}")
+
+		await bot.send_message(userId, f"({text}) был завершен.\nЗакончен в {currTime}")
+		print(userId)
+
 		return
 
 	await bot.edit_message_text(text=f"Таймер завершён досрочно", inline_message_id=inlineMessageId)
