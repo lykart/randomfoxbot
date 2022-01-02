@@ -1,5 +1,5 @@
 from resources.links import     \
-	pathToFont                  #
+	pathToFontTimes, pathToFontArial                  #
 
 import re
 
@@ -71,7 +71,7 @@ def isPic(pic: Image) -> bool:
 	return True
 
 
-def tryToMatchTextWidthByFontSize(txt: str, targetFontSize: int, txtFieldWidth: int, howMuchCanFontChange: int) -> int:
+def tryToMatchTextWidthByFontSize(txt: str, targetFontSize: int, txtFieldWidth: int, howMuchCanFontChange: int, pathToFont) -> int:
 	_font = ImageFont.truetype(pathToFont, targetFontSize)
 
 	txtDrawer = ImageDraw.Draw(
@@ -99,7 +99,7 @@ def tryToMatchTextWidthByFontSize(txt: str, targetFontSize: int, txtFieldWidth: 
 	return fontSize
 
 
-def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: int, wordsCount: int) -> [str, bool]:
+def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: int, wordsCount: int, pathToFont) -> [str, bool]:
 	_font = ImageFont.truetype(pathToFont, fontSize)
 
 	txtDrawer = ImageDraw.Draw(
@@ -139,21 +139,21 @@ def minimizingTextWidthByLiningChange(txt: str, fontSize: int, txtFieldWidth: in
 
 # Обрабатывает текст так, чтобы он влез в картинку
 def textException(txtDrawer: ImageDraw, txt: str, txtFieldWidth: int, targetFontSize: int,
-                  canLiningChange: bool, howMuchCanFontChange: int=None) -> [str, int]:
+                  canLiningChange: bool, pathToFont, howMuchCanFontChange: int=None) -> [str, int]:
 	fontSize = targetFontSize
 	_font = ImageFont.truetype(pathToFont, fontSize)
 	txtWidth = txtDrawer.multiline_textsize(txt, font=_font)[0]
 
 	if howMuchCanFontChange:
 		try:
-			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange)
+			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange, pathToFont=pathToFont)
 			return txt, fontSize
 		except:
 			pass
 
 	wordsCount = len(textPreparation(txt).split())
 	if canLiningChange and wordsCount > 1:
-		temp = minimizingTextWidthByLiningChange(txt, targetFontSize, txtFieldWidth, wordsCount)
+		temp = minimizingTextWidthByLiningChange(txt, targetFontSize, txtFieldWidth, wordsCount, pathToFont=pathToFont)
 
 		txt = temp[0]
 		if temp[-1]:
@@ -161,7 +161,7 @@ def textException(txtDrawer: ImageDraw, txt: str, txtFieldWidth: int, targetFont
 
 	if howMuchCanFontChange and canLiningChange:
 		try:
-			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange)
+			fontSize = tryToMatchTextWidthByFontSize(txt, targetFontSize, txtFieldWidth, howMuchCanFontChange, pathToFont=pathToFont)
 			return txt, fontSize
 		except:
 			pass
@@ -178,7 +178,7 @@ def getBackWidthFromPicWidth(picWidth: int) -> int:
 
 
 # Функция создания картинки подписи
-def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
+def txtPicCreator(hTxt: str, picWidth: int=None, subTxt: str=None,
                   backWidth: int=None, picPath: str=None) -> Image:
 	if picWidth:
 		backWidth = getBackWidthFromPicWidth(picWidth)
@@ -203,14 +203,14 @@ def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
 	headerTargetFontSize = int(txtFieldWidth / 9)
 	try:
 		temp = textException(txtDrawer, hTxt, txtFieldWidth, headerTargetFontSize,
-		                     howMuchCanFontChange=30, canLiningChange=True)
+							howMuchCanFontChange=30, canLiningChange=True, pathToFont=pathToFontTimes)
 	except ValueError:
 		# print(exc, ": Заголовок")
 		raise ValueError("Слишком длинный заголовок", "header")
 
 	hTxt, headerFontSize = temp[0], temp[1]
 
-	headerFont = ImageFont.truetype(pathToFont, headerFontSize)
+	headerFont = ImageFont.truetype(pathToFontTimes, headerFontSize)
 	txtSize = txtDrawer.multiline_textsize(hTxt, font=headerFont)
 	headerWidth, headerHeight = txtSize[0], txtSize[1]
 
@@ -222,12 +222,12 @@ def txtPicCreator(hTxt: str, /, picWidth: int=None, subTxt: str=None,
 
 		try:
 			temp = textException(txtDrawer, subTxt, txtFieldWidth, subFontSize,
-			                     howMuchCanFontChange=20, canLiningChange=True)
+			                     howMuchCanFontChange=20, canLiningChange=True, pathToFont=pathToFontArial)
 		except ValueError:
 			raise ValueError("Слишком длинный подзаголовок", "subtitle")
 
 		subTxt, fontSize = temp[0], temp[1]
-		subFont = ImageFont.truetype(pathToFont, fontSize)
+		subFont = ImageFont.truetype(pathToFontArial, fontSize)
 		subTxtWidth, subTxtHeight = txtDrawer.multiline_textsize(subTxt, font=subFont)
 
 		subtitleBox = intBox(backWidth / 2 - subTxtWidth / 2, headerBox[1] + headerHeight + subTxtPadding)
@@ -268,9 +268,7 @@ def atLeastOne(x: float) -> int:
 
 
 # Основная функция создания демотиватора
-def demotivatorCreator(picPath: str, headerTxt: str=None, subtitleTxt: str=None,
-                       txtPic: Image = None) -> Image:
-
+def demotivatorCreator(picPath: str, headerTxt: str=None, subtitleTxt: str=None, txtPic: Image = None) -> Image:
 	pic = Image.open(picPath)
 
 	pic = picException(pic)

@@ -5,7 +5,9 @@ foxLogoPreview = 'https://i.ibb.co/0tzywHx/Unt22itled-1.png'
 
 pathToResources = dirname(__file__)
 
-pathToFont = join(pathToResources, "times.ttf")
+pathToFontTimes = join(pathToResources, "times.ttf")
+pathToFontArial = join(pathToResources, "arial.ttf")
+
 pathToFoxLogo = join(pathToResources, "foxLogo.png")
 
 pathToFs = join(pathToResources, "fs.png")
