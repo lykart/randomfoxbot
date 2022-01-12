@@ -144,9 +144,7 @@ async def timerChangingHandler(chosen_inline_query: ChosenInlineResult):
 
 		inlineKeyboard = inline_keyboard.InlineKeyboardMarkup(row_width=1).insert(doneButton)
 
-		await bot.edit_message_text(text=f"Время истекло!",	inline_message_id=inlineMessageId)
-		await bot.edit_message_reply_markup(reply_markup=inlineKeyboard,	inline_message_id=inlineMessageId)
-
+		await bot.edit_message_text(text=f"Время истекло!",	inline_message_id=inlineMessageId, reply_markup=inlineKeyboard)
 		await bot.send_message(userId, f"({text}) был завершен.\nЗакончен в {currTime}")
 		print(userId)
 

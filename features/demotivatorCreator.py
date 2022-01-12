@@ -217,7 +217,7 @@ def txtPicCreator(hTxt: str, picWidth: int=None, subTxt: str=None,
 	headerBox = intBox((backWidth / 2) - (headerWidth / 2), txtPadding / 3)
 
 	if subTxt:
-		subTxtPadding = headerHeight * 0.18
+		subTxtPadding = headerHeight * 0.22
 		subFontSize = int(headerFontSize * 0.5)
 
 		try:
