@@ -1,0 +1,6 @@
+screenshots/*
+Dockerfile
+aptfile
+helm
+.gitignore
+README.md
