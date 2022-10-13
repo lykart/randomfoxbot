@@ -1,0 +1,12 @@
+kind: pipeline
+name: test-randomfoxbot
+steps:
+- name: build image
+  image: python:3.8.14-slim-bullseye
+  commands:
+    - apt-get update
+    - apt-get install -y libzbar0 libzbar-dev libpq-dev libjpeg-dev 
+    - apt-get clean autoclean 
+    - apt-get autoremove --yes 
+    - rm -rf /var/lib/{apt,dpkg,cache,log}/ 
+    - pip3 install --no-cache-dir -r requirements.txt
